@@ -54,5 +54,4 @@ cachingLevelForMetaName = {}
 if __name__ == "__main__":
     mainFunction(mainFileDescription, metaInfoEnv, parserInfo,
                  cachingLevelForMetaName = cachingLevelForMetaName,
-                 superContext = GaussianParserContext(),
-    )
+                 superContext = GaussianParserContext())
