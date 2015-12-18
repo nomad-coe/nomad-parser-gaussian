@@ -37,10 +37,10 @@ class GaussianParserContext(object):
 
     # just examples, you probably want to remove the following two triggers
 
-    def onClose_section_single_point_evaluation(self, backend, gIndex, section):
-        """trigger called when section_single_point_evaluation is closed"""
+    def onClose_section_single_configuration_calculation(self, backend, gIndex, section):
+        """trigger called when section_single_configuration_calculation is closed"""
         #backend.addValue("", self.scfIterNr)
-        logging.getLogger("nomadcore.parsing").info("closing section_single_point_evaluation gIndex %d %s", gIndex, section.simpleValues)
+        logging.getLogger("nomadcore.parsing").info("closing section_single_configuration_calculation gIndex %d %s", gIndex, section.simpleValues)
         self.scfIterNr = 0
 
     def onClose_section_scf_iteration(self, backend, gIndex, section):
