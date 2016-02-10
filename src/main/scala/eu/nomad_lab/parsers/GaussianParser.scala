@@ -8,12 +8,13 @@ object GaussianParser extends SimpleExternalParserGenerator(
         ("name" -> jn.JString("GaussianParser")) ::
           ("version" -> jn.JString("1.0")) :: Nil),
       mainFileTypes = Seq("text/.*"),
-      mainFileRe = """\s*Invoking Gaussian \.\.\.
-\s*Version """.r,
+      mainFileRe = """\s*Gaussian, Inc\.  All Rights Reserved\.\s*
+\s*
+\s*This is part of the Gaussian\(R\) [0-9]* program.""".r,
       cmd = Seq(DefaultPythonInterpreter.python2Exe(), "${envDir}/parsers/gaussian/parser/parser-gaussian/parser_gaussian.py",
         "--uri", "${mainFileUri}", "${mainFilePath}"),
       resList = Seq(
-        "parser-gaussian/GaussianParser.py",
+        "parser-gaussian/parser_gaussian.py",
         "parser-gaussian/setup_paths.py",
         "nomad_meta_info/common.nomadmetainfo.json",
         "nomad_meta_info/meta_types.nomadmetainfo.json",
