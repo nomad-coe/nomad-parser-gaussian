@@ -8,7 +8,7 @@ import org.{json4s => jn}
 
 object GaussianParserSpec extends Specification {
   "GaussianParserTest" >> {
-    examplesBlock {
+    "test with Al.out">> {
       ParserRun.parse(GaussianParser,"/home/kariryaa/NoMad/nomad-lab-base/parsers/gaussian/test/examples/Al.out","") must_== ParseResult.ParseSuccess
     }
   }
