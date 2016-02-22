@@ -9,7 +9,12 @@ import org.{json4s => jn}
 object GaussianParserSpec extends Specification {
   "GaussianParserTest" >> {
     "test with Al.out">> {
-      ParserRun.parse(GaussianParser,"/home/kariryaa/NoMad/nomad-lab-base/parsers/gaussian/test/examples/Al.out","") must_== ParseResult.ParseSuccess
+      "test with json-events" >> {
+        ParserRun.parse(GaussianParser,"parsers/gaussian/test/examples/Al.out","json-events") must_== ParseResult.ParseSuccess
+      }
+      "test with json" >> {
+        ParserRun.parse(GaussianParser,"parsers/gaussian/test/examples/Al.out","json") must_== ParseResult.ParseSuccess
+      }
     }
   }
 }
