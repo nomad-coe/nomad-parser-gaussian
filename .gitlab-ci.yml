@@ -1,0 +1,18 @@
+stages:
+  - test
+
+testing:
+  stage: test
+  script:
+    - cd .. && rm -rf nomad-lab-base
+    - git clone --recursive git@gitlab.mpcdf.mpg.de:nomad-lab/nomad-lab-base.git
+    - cd nomad-lab-base
+    - git submodule foreach git checkout master
+    - git submodule foreach git pull
+    - sbt gaussian/test
+  only:
+    - master
+  tags:
+    - test
+    - spec2
+  allow_failure: true
