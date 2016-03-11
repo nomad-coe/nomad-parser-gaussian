@@ -1,0 +1,15 @@
+%mem=36000000
+#PBEPBE/cc-pVDZ opt=z-matrix freq
+
+Al2+ 
+casno=32752946
+method=61
+basis=5
+
+1 2
+Al
+Al 1 r
+
+r 2.75
+
+

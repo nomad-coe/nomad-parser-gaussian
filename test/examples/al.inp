@@ -1,0 +1,12 @@
+%mem=24000000
+#ROHF/6-311G* 
+
+atom calc
+casno=7429905
+method=9
+basis=7
+
+0 2
+Al
+
+
