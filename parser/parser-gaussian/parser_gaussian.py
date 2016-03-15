@@ -34,18 +34,28 @@ mainFileDescription = SM(
                   subMatchers = [
                       SM(r"\s*%[Cc]hk=(?P<gaussian_chk_file>[A-Za-z0-9.]*)"),
                       SM(r"\s*%[Mm]em=(?P<gaussian_memory>[A-Za-z0-9.]*)"),
-                      SM(r"\s*%[Nn][Pp]roc=(?P<gaussian_number_of_processors>[A-Za-z0-9.]*)"),
+                      SM(r"\s*%[Nn][Pp]roc=(?P<gaussian_number_of_processors>[A-Za-z0-9.]*)")
                       ]
               ),
-               SM(name = 'geometry_charge_multiplicity',
-	          sections  = ['section_system_description','gaussian_section_geometry'],
+               SM(name = 'charge_multiplicity',
+	          sections  = ['section_system_description','gaussian_section_labels'],
 		  startReStr = r"\s*Symbolic Z-matrix:",
                       subMatchers = [
 		      SM(r"\s*Charge =\s*(?P<total_charge>[-+0-9]+) Multiplicity =\s*(?P<target_multiplicity>[0-9]+)"),
-                      SM(r"\s*(?P<gaussian_atom_label>\w+)\s+(?P<gaussian_atom_x_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<gaussian_atom_y_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<gaussian_atom_z_coord__angstrom>[-+0-9EeDd.]+)",
-			repeats = True)
-                      ]),
-               SM(r"\s*NAtoms=")
+                      SM(r"\s*(?P<gaussian_atom_label>\D{1,2}?(?=\s*[0-9,-]))",repeats = True),
+                      SM(r"\s*(?P<gaussian_atom_label>\w{1,2}(?=\s))",repeats = True),
+                      SM(r"\s*Variables:|\s*NAtoms=|\s*Z-MATRIX"),
+                      SM(r"\s*"),
+                      ]
+              ),
+               SM(name = 'geometry',
+                  sections  = ['section_system_description','gaussian_section_geometry'],
+                  startReStr = r"\s*Z-Matrix orientation:|\s*Input orientation:|\s*Standard orientation:",
+                      subMatchers = [
+                      SM(r"\s+[0-9]+\s+[0-9]+\s+[0-9]+\s+(?P<gaussian_atom_x_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<gaussian_atom_y_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<gaussian_atom_z_coord__angstrom>[-+0-9EeDd.]+)",repeats = True)
+                      ]
+              ), 
+                   SM(r"\s*Symmetry|\s*Stoichiometry")
            ])
 ])
 
@@ -66,22 +76,24 @@ class GaussianParserContext(object):
     def startedParsing(self, path, parser):
         self.parser = parser
 
+    def onClose_gaussian_section_labels(self, backend, gIndex, section):
+        labels = section["gaussian_atom_label"]
+        logging.error("labels:%s",labels)
+        backend.addValue("atom_label", labels)
+
     def onClose_gaussian_section_geometry(self, backend, gIndex, section):
 	xCoord = section["gaussian_atom_x_coord"]
 	yCoord = section["gaussian_atom_y_coord"]
         zCoord = section["gaussian_atom_z_coord"]
-	labels = section["gaussian_atom_label"]
 	logging.error("x:%s",xCoord)
         logging.error("y:%s",yCoord)
         logging.error("z:%s",zCoord)
-        logging.error("labels:%s",labels)
         atom_positions = np.zeros((len(xCoord),3), dtype=float)
 	for i in range(len(xCoord)):
 	    atom_positions[i,0] = xCoord[i]
             atom_positions[i,1] = yCoord[i]
             atom_positions[i,2] = zCoord[i]
 	backend.addArrayValues("atom_position", atom_positions)
-	backend.addValue("atom_label", labels)
 
 # which values to cache or forward (mapping meta name -> CachingLevel)
 cachingLevelForMetaName = {
@@ -90,6 +102,7 @@ cachingLevelForMetaName = {
         "gaussian_atom_z_coord": CachingLevel.Cache,
 	"gaussian_atom_label": CachingLevel.Cache,
 	"gaussian_section_geometry": CachingLevel.Ignore,
+        "gaussian_section_labels": CachingLevel.Ignore,
 }
 
 if __name__ == "__main__":
