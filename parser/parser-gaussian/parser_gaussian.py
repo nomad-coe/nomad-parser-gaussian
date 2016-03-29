@@ -16,6 +16,7 @@ mainFileDescription = SM(
            repeats = True,
            required = True,
            forwardMatch = True,
+           fixedStartValues={'program_name': 'Gaussian', 'program_basis_set_type': 'gaussians' },
            sections   = ['section_run','section_method'],
            subMatchers = [
                SM(name = 'header',
