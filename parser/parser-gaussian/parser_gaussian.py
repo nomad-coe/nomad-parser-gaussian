@@ -16,7 +16,7 @@ mainFileDescription = SM(
            repeats = True,
            required = True,
            forwardMatch = True,
-           fixedStartValues={'program_name': 'Gaussian', 'program_basis_set_type': 'gaussians' },
+           fixedStartValues={ 'program_basis_set_type': 'gaussians' },
            sections   = ['section_run','section_method'],
            subMatchers = [
                SM(name = 'header',
@@ -79,16 +79,12 @@ class GaussianParserContext(object):
 
     def onClose_gaussian_section_labels(self, backend, gIndex, section):
         labels = section["gaussian_atom_label"]
-        logging.error("labels:%s",labels)
         backend.addValue("atom_label", labels)
 
     def onClose_gaussian_section_geometry(self, backend, gIndex, section):
 	xCoord = section["gaussian_atom_x_coord"]
 	yCoord = section["gaussian_atom_y_coord"]
         zCoord = section["gaussian_atom_z_coord"]
-	logging.error("x:%s",xCoord)
-        logging.error("y:%s",yCoord)
-        logging.error("z:%s",zCoord)
         atom_positions = np.zeros((len(xCoord),3), dtype=float)
 	for i in range(len(xCoord)):
 	    atom_positions[i,0] = xCoord[i]
