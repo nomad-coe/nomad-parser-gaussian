@@ -27,6 +27,7 @@ object GaussianParser extends SimpleExternalParserGenerator(
   resList = Seq(
     "parser-gaussian/parser_gaussian.py",
     "parser-gaussian/setup_paths.py",
+    "nomad_meta_info/public.nomadmetainfo.json",
     "nomad_meta_info/common.nomadmetainfo.json",
     "nomad_meta_info/meta_types.nomadmetainfo.json",
     "nomad_meta_info/gaussian.nomadmetainfo.json"
