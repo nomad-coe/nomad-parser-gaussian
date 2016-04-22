@@ -5,7 +5,7 @@ from nomadcore.caching_backend import CachingLevel
 import os, sys, json, logging
 import numpy as np
 
-# description of the input
+# description of the output
 mainFileDescription = SM(
     name = 'root',
     weak = True,
@@ -40,14 +40,22 @@ mainFileDescription = SM(
               ),
                SM(name = 'charge_multiplicity',
 	          sections  = ['section_system_description','gaussian_section_labels'],
-		  startReStr = r"\s*Symbolic Z-matrix:",
-                      subMatchers = [
+		  startReStr = r"\s*Charge =",
+                  subFlags = SM.SubFlags.Sequenced,
+                  forwardMatch = True,
+                  subMatchers = [
 		      SM(r"\s*Charge =\s*(?P<total_charge>[-+0-9]+) Multiplicity =\s*(?P<target_multiplicity>[0-9]+)"),
-                      SM(r"\s*(?P<gaussian_atom_label>\D{1,2}?(?=\s*[0-9,-]))",repeats = True),
-                      SM(r"\s*(?P<gaussian_atom_label>\w{1,2}(?=\s))",repeats = True),
-                      SM(r"\s*Variables:|\s*NAtoms=|\s*Z-MATRIX"),
-                      SM(r"\s*"),
-                      ]
+                      SM(r"\sModel"),
+                      SM(r"\sShort"), 
+                      SM(r"\s*Atom"),
+                      SM(r"\s*\d\d?\d?\s{7,8}?[A-Za-z-]", repeats = True),
+                      SM(r"\s*Generated"), 
+                      SM(r"\sNo Z-Matrix found in file|\sZ-Matrix found in file"),
+                      SM(r"\sRedundant internal coordinates found in file"),
+                      SM(r"\s*(?P<gaussian_atom_label>([A-Za-z][A-Za-z]|[A-WYZa-wyz]|\d\d?\d?))[^A-Za-z]", repeats=True),
+                      SM(r"\sRecover connectivity data from disk."),
+                      SM(r"\s*Variables:|\s*------|\s*\r?\n")
+                  ]
               ),
                SM(name = 'geometry',
                   sections  = ['section_system_description','gaussian_section_geometry'],
