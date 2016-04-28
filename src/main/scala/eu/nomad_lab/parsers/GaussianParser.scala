@@ -11,7 +11,9 @@ object GaussianParser extends SimpleExternalParserGenerator(
     ("name" -> jn.JString("GaussianParser")) ::
       ("parserId" -> jn.JString("GaussianParser" + lab.GaussianVersionInfo.version)) ::
       ("versionInfo" -> jn.JObject(
-        ("nomadCoreVersion" -> jn.JString(lab.NomadCoreVersionInfo.version)) ::
+        ("nomadCoreVersion" -> jn.JObject(lab.NomadCoreVersionInfo.toMap.map {
+          case (k, v) => k -> jn.JString(v.toString)
+        }(breakOut): List[(String, jn.JString)])) ::
           (lab.GaussianVersionInfo.toMap.map {
             case (key, value) =>
               (key -> jn.JString(value.toString))

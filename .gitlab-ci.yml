@@ -15,4 +15,3 @@ testing:
   tags:
     - test
     - spec2
-  allow_failure: true
