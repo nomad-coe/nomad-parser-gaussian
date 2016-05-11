@@ -4,6 +4,7 @@ from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
 from nomadcore.caching_backend import CachingLevel
 import os, sys, json, logging
 import numpy as np
+import ase
 
 # description of the output
 mainFileDescription = SM(
@@ -33,38 +34,29 @@ mainFileDescription = SM(
                   subFlags = SM.SubFlags.Unordered,
                   forwardMatch = True,
                   subMatchers = [
-                      SM(r"\s*%[Cc]hk=(?P<gaussian_chk_file>[A-Za-z0-9.]*)"),
-                      SM(r"\s*%[Mm]em=(?P<gaussian_memory>[A-Za-z0-9.]*)"),
-                      SM(r"\s*%[Nn][Pp]roc=(?P<gaussian_number_of_processors>[A-Za-z0-9.]*)")
+                      SM(r"\s*%[Cc]hk=(?P<x_gaussian_chk_file>[A-Za-z0-9.]*)"),
+                      SM(r"\s*%[Mm]em=(?P<x_gaussian_memory>[A-Za-z0-9.]*)"),
+                      SM(r"\s*%[Nn][Pp]roc=(?P<x_gaussian_number_of_processors>[A-Za-z0-9.]*)")
                       ]
               ),
                SM(name = 'charge_multiplicity',
-	          sections  = ['section_system_description','gaussian_section_labels'],
+	          sections  = ['section_system_description','x_gaussian_section_chargemult'],
 		  startReStr = r"\s*Charge =",
                   subFlags = SM.SubFlags.Sequenced,
                   forwardMatch = True,
                   subMatchers = [
-		      SM(r"\s*Charge =\s*(?P<total_charge>[-+0-9]+) Multiplicity =\s*(?P<target_multiplicity>[0-9]+)"),
-                      SM(r"\sModel"),
-                      SM(r"\sShort"), 
-                      SM(r"\s*Atom"),
-                      SM(r"\s*\d\d?\d?\s{7,8}?[A-Za-z-]", repeats = True),
-                      SM(r"\s*Generated"), 
-                      SM(r"\sNo Z-Matrix found in file|\sZ-Matrix found in file"),
-                      SM(r"\sRedundant internal coordinates found in file"),
-                      SM(r"\s*(?P<gaussian_atom_label>([A-Za-z][A-Za-z]|[A-WYZa-wyz]|\d\d?\d?))[^A-Za-z]", repeats=True),
-                      SM(r"\sRecover connectivity data from disk."),
-                      SM(r"\s*Variables:|\s*------|\s*\r?\n")
-                  ]
+                      SM(r"\s*Charge =\s*(?P<total_charge>[-+0-9]+) Multiplicity =\s*(?P<target_multiplicity>[0-9]+)"),
+                      ]
               ),
                SM(name = 'geometry',
-                  sections  = ['section_system_description','gaussian_section_geometry'],
-                  startReStr = r"\s*Z-Matrix orientation:|\s*Input orientation:|\s*Standard orientation:",
+                  sections  = ['section_system_description','x_gaussian_section_geometry'],
+                  startReStr = r"\s*Input orientation:|\s*Z-Matrix orientation:|\s*Standard orientation:",
+                  subFlags = SM.SubFlags.Sequenced,
                       subMatchers = [
-                      SM(r"\s+[0-9]+\s+[0-9]+\s+[0-9]+\s+(?P<gaussian_atom_x_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<gaussian_atom_y_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<gaussian_atom_z_coord__angstrom>[-+0-9EeDd.]+)",repeats = True)
+                      SM(r"\s+[0-9]+\s+(?P<x_gaussian_atomic_number>[0-9]+)\s+[0-9]+\s+(?P<x_gaussian_atom_x_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<x_gaussian_atom_y_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<x_gaussian_atom_z_coord__angstrom>[-+0-9EeDd.]+)",repeats = True),
+                      SM(r"\s*Distance matrix|\s*Rotational constants|\s*Stoichiometry")
                       ]
               ), 
-                   SM(r"\s*Symmetry|\s*Stoichiometry")
            ])
 ])
 
@@ -85,29 +77,31 @@ class GaussianParserContext(object):
     def startedParsing(self, path, parser):
         self.parser = parser
 
-    def onClose_gaussian_section_labels(self, backend, gIndex, section):
-        labels = section["gaussian_atom_label"]
-        backend.addValue("atom_label", labels)
-
-    def onClose_gaussian_section_geometry(self, backend, gIndex, section):
-	xCoord = section["gaussian_atom_x_coord"]
-	yCoord = section["gaussian_atom_y_coord"]
-        zCoord = section["gaussian_atom_z_coord"]
+    def onClose_x_gaussian_section_geometry(self, backend, gIndex, section):
+	xCoord = section["x_gaussian_atom_x_coord"]
+	yCoord = section["x_gaussian_atom_y_coord"]
+        zCoord = section["x_gaussian_atom_z_coord"]
+        numbers = section["x_gaussian_atomic_number"]
         atom_positions = np.zeros((len(xCoord),3), dtype=float)
+        atom_numbers = np.zeros(len(xCoord), dtype=int)
+        atomic_symbols = np.empty((len(xCoord)), dtype=object) 
 	for i in range(len(xCoord)):
 	    atom_positions[i,0] = xCoord[i]
             atom_positions[i,1] = yCoord[i]
             atom_positions[i,2] = zCoord[i]
+        for i in range(len(xCoord)):
+            atom_numbers[i] = numbers[i]
+            atomic_symbols[i] = ase.data.chemical_symbols[atom_numbers[i]] 
 	backend.addArrayValues("atom_position", atom_positions)
+        backend.addArrayValues("atom_label", atomic_symbols)
 
 # which values to cache or forward (mapping meta name -> CachingLevel)
 cachingLevelForMetaName = {
-	"gaussian_atom_x_coord": CachingLevel.Cache,
-        "gaussian_atom_y_coord": CachingLevel.Cache,
-        "gaussian_atom_z_coord": CachingLevel.Cache,
-	"gaussian_atom_label": CachingLevel.Cache,
-	"gaussian_section_geometry": CachingLevel.Ignore,
-        "gaussian_section_labels": CachingLevel.Ignore,
+	"x_gaussian_atom_x_coord": CachingLevel.Cache,
+        "x_gaussian_atom_y_coord": CachingLevel.Cache,
+        "x_gaussian_atom_z_coord": CachingLevel.Cache,
+        "x_gaussian_atomic_number": CachingLevel.Cache,
+	"x_gaussian_section_geometry": CachingLevel.Ignore,
 }
 
 if __name__ == "__main__":
