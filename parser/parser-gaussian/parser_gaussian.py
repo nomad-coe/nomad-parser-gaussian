@@ -40,7 +40,7 @@ mainFileDescription = SM(
                       ]
               ),
                SM(name = 'charge_multiplicity',
-	          sections  = ['section_system_description','x_gaussian_section_chargemult'],
+	          sections  = ['section_system','x_gaussian_section_chargemult'],
 		  startReStr = r"\s*Charge =",
                   subFlags = SM.SubFlags.Sequenced,
                   forwardMatch = True,
@@ -49,7 +49,7 @@ mainFileDescription = SM(
                       ]
               ),
                SM(name = 'geometry',
-                  sections  = ['section_system_description','x_gaussian_section_geometry'],
+                  sections  = ['section_system','x_gaussian_section_geometry'],
                   startReStr = r"\s*Input orientation:|\s*Z-Matrix orientation:|\s*Standard orientation:",
                   subFlags = SM.SubFlags.Sequenced,
                       subMatchers = [
