@@ -92,8 +92,8 @@ class GaussianParserContext(object):
         for i in range(len(xCoord)):
             atom_numbers[i] = numbers[i]
             atomic_symbols[i] = ase.data.chemical_symbols[atom_numbers[i]] 
-	backend.addArrayValues("atom_position", atom_positions)
-        backend.addArrayValues("atom_label", atomic_symbols)
+	backend.addArrayValues("atom_positions", atom_positions)
+        backend.addArrayValues("atom_labels", atomic_symbols)
 
 # which values to cache or forward (mapping meta name -> CachingLevel)
 cachingLevelForMetaName = {
