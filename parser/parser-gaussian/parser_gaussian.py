@@ -45,7 +45,7 @@ mainFileDescription = SM(
                   subFlags = SM.SubFlags.Sequenced,
                   forwardMatch = True,
                   subMatchers = [
-                      SM(r"\s*Charge =\s*(?P<total_charge>[-+0-9]+) Multiplicity =\s*(?P<target_multiplicity>[0-9]+)"),
+                      SM(r"\s*Charge =\s*(?P<total_charge>[-+0-9]+) Multiplicity =\s*(?P<spin_target_multiplicity>[0-9]+)"),
                       ]
               ),
                SM(name = 'geometry',
