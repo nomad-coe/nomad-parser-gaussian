@@ -2,9 +2,11 @@ import setup_paths
 from nomadcore.simple_parser import mainFunction, SimpleMatcher as SM
 from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
 from nomadcore.caching_backend import CachingLevel
+from nomadcore.unit_conversion.unit_conversion import convert_unit
 import os, sys, json, logging
 import numpy as np
 import ase
+import csv
 
 # description of the output
 mainFileDescription = SM(
@@ -176,6 +178,7 @@ mainFileDescription = SM(
                   startReStr = r"\s*Charge=",
                   forwardMatch = True,
                   subMatchers = [
+                      SM(r"\s*Charge=(?P<charge>\s*[-0-9.]+)"),
                       SM(r"\s*Dipole moment "), 
                       SM(r"\s+\w+=\s+(?P<dipole_moment_x>[-+0-9EeDd.]+)\s+\w+=\s+(?P<dipole_moment_y>[-+0-9EeDd.]+)\s+\w+=\s+(?P<dipole_moment_z>[-+0-9EeDd.]+)"),
                       SM(r"\s*Quadrupole moment"), 
@@ -195,14 +198,42 @@ mainFileDescription = SM(
                       SM(r"\s+\w+=\s+(?P<hexadecapole_moment_xxyz>[-+0-9EeDd.]+)\s+\w+=\s+(?P<hexadecapole_moment_yyxz>[-+0-9EeDd.]+)\s+\w+=\s+(?P<hexadecapole_moment_zzxy>[-+0-9EeDd.]+)")
                       ]
              ),    
-                SM(name = 'Frequencies',
-                sections = ['x_gaussian_section_frequencies'],
-                startReStr = r"\s*Frequencies --",
+                     SM (name = 'Frequencies',
+                     sections = ['x_gaussian_section_frequencies'],
+                     startReStr = r"\s*Frequencies --",
+                     endReStr = r"\s*- Thermochemistry -",
+                     forwardMatch = True,
+                     repeats = True,
+                     subFlags = SM.SubFlags.Unordered,
+                     subMatchers = [
+                          SM(r"\s*Frequencies --\s+(?P<x_gaussian_frequency_values>([-]?[0-9]+\.\d*)\s*([-]?[-0-9]+\.\d*)?\s*([-]?[-0-9]+\.\d*)?)", repeats = True),
+                          SM(r"\s*Red. masses --\s+(?P<x_gaussian_reduced_masses>(.+))", repeats = True),
+                          SM(r"\s*[0-9]+\s*[0-9]+\s*(?P<x_gaussian_normal_modes>([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+))", repeats = True),
+                          SM(r"\s*[0-9]+\s*([0-9]+)?\s*([0-9]+)?"),
+                      ]
+             ),
+                SM(name = 'Thermochemistry',
+                sections = ['x_gaussian_section_thermochem'],
+                startReStr = r"\s*Temperature",
                 forwardMatch = True,
-                subFlags = SM.SubFlags.Sequenced,
                 subMatchers = [
-                      SM(r"\s*Frequencies --\s*(?P<x_gaussian_frequency_values>(.+)?)", repeats = True),
-                      SM(r"\s*- Thermochemistry -"),
+                      SM(r"\s*Temperature\s*(?P<x_gaussian_temperature>[0-9.]+)\s*Kelvin.\s*Pressure\s*(?P<x_gaussian_pressure__atmosphere>[0-9.]+)\s*Atm."),
+                      SM(r"\s*Principal axes and moments of inertia in atomic units:"),
+                      SM(r"\s*Eigenvalues --\s*(?P<x_gaussian_moment_of_inertia_X__amu_angstrom_angstrom>[0-9.]+)\s*(?P<x_gaussian_moment_of_inertia_Y__amu_angstrom_angstrom>[0-9.]+)\s*(?P<x_gaussian_moment_of_inertia_Z__amu_angstrom_angstrom>[0-9.]+)"),
+                      SM(r"\s*Zero-point correction=\s*(?P<x_gaussian_zero_point_energy__hartree>[0-9.]+)"),
+                      SM(r"\s*Thermal correction to Energy=\s*(?P<x_gaussian_thermal_correction_energy__hartree>[0-9.]+)"),
+                      SM(r"\s*Thermal correction to Enthalpy=\s*(?P<x_gaussian_thermal_correction_enthalpy__hartree>[0-9.]+)"),
+                      SM(r"\s*Thermal correction to Gibbs Free Energy=\s*(?P<x_gaussian_thermal_correction_free_energy__hartree>[0-9.]+)"), 
+                      ]
+             ),       
+                SM(name = 'Forceconstantmatrix',
+                sections = ['x_gaussian_section_force_constant_matrix'],
+                startReStr = r"\s*Force constants in Cartesian coordinates",
+                forwardMatch = True,
+                subMatchers = [
+                      SM(r"\s*Force constants in Cartesian coordinates"),
+                      SM(r"\s*[0-9]+\s*(?P<x_gaussian_force_constants>(\-?\d+\.\d*[-+D0-9]+)\s*(\-?\d+\.\d*[-+D0-9]+)?\s*(\-?\d+\.\d*[-+D0-9]+)?\s*(\-?\d+\.\d*[-+D0-9]+)?\s*(\-?\d+\.\d*[-+D0-9]+)?)", repeats = True),
+                      SM(r"\s*Force constants in internal coordinates")
                       ]
              ),
                 SM(name = 'run times',
@@ -336,58 +367,61 @@ class GaussianParserContext(object):
         if section['x_gaussian_single_configuration_calculation_converged'] is not None:
             self.scfConvergence = True
 
-      def onClose_x_gaussian_section_frequencies(self, backend, gIndex, section):
-          frequencies = str(section["x_gaussian_frequency_values"])
-          vibfreqs = []
-          freqs = [float(f) for f in frequencies[1:].replace("'","").replace(",","").replace("]","").split()]
-          vibfreqs = np.append(vibfreqs, freqs)
-          backend.addArrayValues("x_gaussian_frequencies", vibfreqs)
-
       def onClose_x_gaussian_section_atomic_masses(self, backend, gIndex, section):
-          atomicmasses = str(section["x_gaussian_atomic_masses"])
-          atmass = []
-          mass = [float(f) for f in atomicmasses[1:].replace("'","").replace(",","").replace("]","").split()]
-          atmass = np.append(atmass, mass)
-          backend.addArrayValues("x_gaussian_masses", atmass)   
+          if(section["x_gaussian_atomic_masses"]):
+             atomicmasses = str(section["x_gaussian_atomic_masses"])
+             atmass = []
+             mass = [float(f) for f in atomicmasses[1:].replace("'","").replace(",","").replace("]","").replace(" ."," 0.").replace(" -."," -0.").split()]
+             atmass = np.append(atmass, mass)
+             backend.addArrayValues("x_gaussian_masses", atmass)   
        
       def onClose_x_gaussian_section_eigenvalues(self, backend, gIndex, section):
           eigenenergies = str(section["x_gaussian_alpha_occ_eigenvalues_values"])
           eigenen1 = []
-          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").split()]
+          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").split()]
           eigenen1 = np.append(eigenen1, energy)
-          occoccupationsalp = np.ones(len(eigenen1), dtype=float)
+          if(section["x_gaussian_beta_occ_eigenvalues_values"]):
+             occoccupationsalp = np.ones(len(eigenen1), dtype=float)
+          else:
+             occoccupationsalp = 2.0 * np.ones(len(eigenen1), dtype=float)
+
           eigenenergies = str(section["x_gaussian_alpha_vir_eigenvalues_values"])
           eigenen2 = []
-          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").split()]
+          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").split()]
           eigenen2 = np.append(eigenen2, energy)
           viroccupationsalp = np.zeros(len(eigenen2), dtype=float)
           eigenencon = np.zeros(len(eigenen1) + len(eigenen2))
           eigenencon = np.concatenate((eigenen1,eigenen2), axis=0)
+          eigenencon = convert_unit(eigenencon, "hartree", "J")
           occupcon = np.concatenate((occoccupationsalp, viroccupationsalp), axis=0)
           backend.addArrayValues("x_gaussian_alpha_eigenvalues", eigenencon)
           backend.addArrayValues("x_gaussian_alpha_occupations", occupcon)
 
-          eigenenergies = str(section["x_gaussian_beta_occ_eigenvalues_values"])
-          eigenen1 = []
-          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").split()]
-          eigenen1 = np.append(eigenen1, energy)
-          occoccupationsbet = np.ones(len(eigenen1), dtype=float)
-          eigenenergies = str(section["x_gaussian_beta_vir_eigenvalues_values"])
-          eigenen2 = []
-          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").split()]
-          eigenen2 = np.append(eigenen2, energy)
-          viroccupationsbet = np.zeros(len(eigenen2), dtype=float)
-          eigenencon = np.zeros(len(eigenen1) + len(eigenen2))
-          eigenencon = np.concatenate((eigenen1,eigenen2), axis=0)
-          occupcon = np.concatenate((occoccupationsbet, viroccupationsbet), axis=0)
-          backend.addArrayValues("x_gaussian_beta_eigenvalues", eigenencon)
-          backend.addArrayValues("x_gaussian_beta_occupations", occupcon)
+          if(section["x_gaussian_beta_occ_eigenvalues_values"]):
+             eigenenergies = str(section["x_gaussian_beta_occ_eigenvalues_values"])
+             eigenen1 = []
+             energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").split()]
+             eigenen1 = np.append(eigenen1, energy)
+             occoccupationsbet = np.ones(len(eigenen1), dtype=float)
+             eigenenergies = str(section["x_gaussian_beta_vir_eigenvalues_values"])
+             eigenen2 = []
+             energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").split()]
+             eigenen2 = np.append(eigenen2, energy)
+             viroccupationsbet = np.zeros(len(eigenen2), dtype=float)
+             eigenencon = np.zeros(len(eigenen1) + len(eigenen2))
+             eigenencon = np.concatenate((eigenen1,eigenen2), axis=0)
+             eigenencon = convert_unit(eigenencon, "hartree", "J")
+             occupcon = np.concatenate((occoccupationsbet, viroccupationsbet), axis=0)
+             backend.addArrayValues("x_gaussian_beta_eigenvalues", eigenencon)
+             backend.addArrayValues("x_gaussian_beta_occupations", occupcon)
 
       def onClose_x_gaussian_section_orbital_symmetries(self, backend, gIndex, section):
           symoccalpha = str(section["x_gaussian_alpha_occ_symmetry_values"])
           symviralpha = str(section["x_gaussian_alpha_vir_symmetry_values"])
-          symoccbeta = str(section["x_gaussian_beta_occ_symmetry_values"])
-          symvirbeta = str(section["x_gaussian_beta_vir_symmetry_values"])
+          if(section["x_gaussian_beta_occ_symmetry_values"]):
+             symoccbeta = str(section["x_gaussian_beta_occ_symmetry_values"])
+             symvirbeta = str(section["x_gaussian_beta_vir_symmetry_values"])
+
           symmetry = [str(f) for f in symoccalpha[1:].replace("'","").replace(",","").replace("(","").replace(")","").replace("]","").split()]
           sym1 = []
           sym1 = np.append(sym1, symmetry)  
@@ -396,14 +430,198 @@ class GaussianParserContext(object):
           sym2 = np.append(sym2, symmetry)
           symmetrycon = np.concatenate((sym1, sym2), axis=0)
           backend.addArrayValues("x_gaussian_alpha_symmetries", symmetrycon) 
-          symmetry = [str(f) for f in symoccbeta[1:].replace("'","").replace(",","").replace("(","").replace(")","").replace("]","").split()]
-          sym1 = []
-          sym1 = np.append(sym1, symmetry)
-          symmetry = [str(f) for f in symvirbeta[1:].replace("'","").replace(",","").replace("(","").replace(")","").replace("]","").split()]
-          sym2 = []
-          sym2 = np.append(sym2, symmetry)
-          symmetrycon = np.concatenate((sym1, sym2), axis=0)
-          backend.addArrayValues("x_gaussian_beta_symmetries", symmetrycon)
+
+          if(section["x_gaussian_beta_occ_symmetry_values"]):
+             symmetry = [str(f) for f in symoccbeta[1:].replace("'","").replace(",","").replace("(","").replace(")","").replace("]","").split()]
+             sym1 = []
+             sym1 = np.append(sym1, symmetry)
+             symmetry = [str(f) for f in symvirbeta[1:].replace("'","").replace(",","").replace("(","").replace(")","").replace("]","").split()]
+             sym2 = []
+             sym2 = np.append(sym2, symmetry)
+             symmetrycon = np.concatenate((sym1, sym2), axis=0)
+             backend.addArrayValues("x_gaussian_beta_symmetries", symmetrycon)
+
+      def onClose_x_gaussian_section_molecular_multipoles(self, backend, gIndex, section):
+          if(section["quadrupole_moment_xx"]):
+             x_gaussian_number_of_lm_molecular_multipoles = 35
+          else:
+             x_gaussian_number_of_lm_molecular_multipoles = 4
+
+          x_gaussian_molecular_multipole_m_kind = 'polynomial'
+
+          char = str(section["charge"])
+          cha = str([char])
+          charge = [float(f) for f in cha[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").replace('"','').split()]
+#         charge = convert_unit
+
+          dipx = section["dipole_moment_x"]
+          dipy = section["dipole_moment_y"]
+          dipz = section["dipole_moment_z"]
+          dip = str([dipx, dipy, dipz])
+          dipoles = [float(f) for f in dip[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()]
+          dipoles = convert_unit(dipoles, "debye", "coulomb * meter")
+
+          quadxx = section["quadrupole_moment_xx"]
+          quadxy = section["quadrupole_moment_xy"]
+          quadyy = section["quadrupole_moment_yy"]
+          quadxz = section["quadrupole_moment_xz"]
+          quadyz = section["quadrupole_moment_yz"]
+          quadzz = section["quadrupole_moment_zz"]
+          quad = str([quadxx, quadxy, quadyy, quadxz, quadyz, quadzz])
+          quadrupoles = [float(f) for f in quad[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()] 
+          if(section["quadrupole_moment_xx"]): 
+             quadrupoles = convert_unit(quadrupoles, "debye * angstrom", "coulomb * meter**2")
+
+          octaxxx = section["octapole_moment_xxx"]
+          octayyy = section["octapole_moment_yyy"]
+          octazzz = section["octapole_moment_zzz"]
+          octaxyy = section["octapole_moment_xyy"]
+          octaxxy = section["octapole_moment_xxy"]
+          octaxxz = section["octapole_moment_xxz"]
+          octaxzz = section["octapole_moment_xzz"]
+          octayzz = section["octapole_moment_yzz"]
+          octayyz = section["octapole_moment_yyz"]
+          octaxyz = section["octapole_moment_xyz"]
+          octa = str([octaxxx, octayyy, octazzz, octaxyy, octaxxy, octaxxz, octaxzz, octayzz, octayyz, octaxyz])
+          octapoles = [float(f) for f in octa[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()]
+          if(section["octapole_moment_xxx"]):
+             octapoles = convert_unit(octapoles, "debye * angstrom**2", "coulomb * meter**3")
+
+          hexadecaxxxx = section["hexadecapole_moment_xxxx"]
+          hexadecayyyy = section["hexadecapole_moment_yyyy"]
+          hexadecazzzz = section["hexadecapole_moment_zzzz"]
+          hexadecaxxxy = section["hexadecapole_moment_xxxy"]
+          hexadecaxxxz = section["hexadecapole_moment_xxxz"]
+          hexadecayyyx = section["hexadecapole_moment_yyyx"]
+          hexadecayyyz = section["hexadecapole_moment_yyyz"]
+          hexadecazzzx = section["hexadecapole_moment_zzzx"]
+          hexadecazzzy = section["hexadecapole_moment_zzzy"]
+          hexadecaxxyy = section["hexadecapole_moment_xxyy"]
+          hexadecaxxzz = section["hexadecapole_moment_xxzz"]
+          hexadecayyzz = section["hexadecapole_moment_yyzz"]
+          hexadecaxxyz = section["hexadecapole_moment_xxyz"]
+          hexadecayyxz = section["hexadecapole_moment_yyxz"]
+          hexadecazzxy = section["hexadecapole_moment_zzxy"]
+          hexa = str([hexadecaxxxx, hexadecayyyy, hexadecazzzz, hexadecaxxxy, hexadecaxxxz, hexadecayyyx, hexadecayyyz,
+          hexadecazzzx, hexadecazzzy, hexadecaxxyy, hexadecaxxzz, hexadecayyzz, hexadecaxxyz, hexadecayyxz, hexadecazzxy])
+          hexadecapoles = [float(f) for f in hexa[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()]
+          if(section["hexadecapole_moment_xxxx"]):
+             hexadecapoles = convert_unit(hexadecapoles, "debye * angstrom**3", "coulomb * meter**4")
+
+          if(section["quadrupole_moment_xx"]):
+             multipoles = np.hstack((charge, dipoles, quadrupoles, octapoles, hexadecapoles))
+          else:
+             multipoles = np.hstack((charge, dipoles)) 
+
+          x_gaussian_molecular_multipole_values = np.resize(multipoles, (x_gaussian_number_of_lm_molecular_multipoles))
+
+#          x_gaussian_molecular_multipole_lm[0] = (0,0) 
+#          x_gaussian_molecular_multipole_lm[1] = (1,0)
+#          x_gaussian_molecular_multipole_lm[2] = (1,1)
+#          x_gaussian_molecular_multipole_lm[3] = (1,2)
+          backend.addArrayValues("x_gaussian_molecular_multipole_values", x_gaussian_molecular_multipole_values)
+          backend.addValue("x_gaussian_molecular_multipole_m_kind", x_gaussian_molecular_multipole_m_kind)
+
+      def onClose_x_gaussian_section_frequencies(self, backend, gIndex, section):
+          frequencies = str(section["x_gaussian_frequency_values"])
+          vibfreqs = []
+          freqs = [float(f) for f in frequencies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace("\\n","").replace(" ."," 0.").replace(" -."," -0.").split()]
+          vibfreqs = np.append(vibfreqs, freqs)
+          vibfreqs = convert_unit(vibfreqs, "inversecm", "J")
+          backend.addArrayValues("x_gaussian_frequencies", vibfreqs)
+
+          masses = str(section["x_gaussian_reduced_masses"])
+          vibreducedmasses = []
+          reduced = [float(f) for f in masses[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").split()]
+          vibreducedmasses = np.append(vibreducedmasses, reduced)
+          vibreducedmasses = convert_unit(vibreducedmasses, "amu", "kilogram")
+          backend.addArrayValues("x_gaussian_red_masses", vibreducedmasses)
+
+          vibnormalmodes = []
+          vibdisps = str(section["x_gaussian_normal_modes"])
+          disps = [float(s) for s in vibdisps[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace("\\n","").replace(" ."," 0.").replace(" -."," -0.").split()]
+          dispsnew = np.zeros(len(disps), dtype = float)
+
+#  Reorder disps 
+
+          if len(vibfreqs) % 3 == 0:
+             k = 0
+             for p in range(0,len(vibfreqs) / 3):
+                M = len(disps)/len(vibfreqs) * (p+1) 
+                for m in range(3):
+                  for n in range(M - len(disps)/len(vibfreqs),M,3):
+                    for l in range(3):
+                      dispsnew[k] = disps[3*(n + m) + l]
+                      k = k + 1
+          elif len(vibfreqs) % 3 != 0:
+             k = 0
+             for p in range(len(vibfreqs)-1,0,-3):
+                M = (len(disps) - len(disps)/len(vibfreqs)) / p 
+                for m in range(3):
+                  for n in range(M - len(disps)/len(vibfreqs),M,3):
+                    for l in range(3):
+                      dispsnew[k] = disps[3*(n + m) + l]
+                      k = k + 1
+             for m in range(len(disps)/len(vibfreqs)):
+                   dispsnew[k] = disps[k]
+                   k = k + 1
+
+          vibnormalmodes = np.append(vibnormalmodes, dispsnew)
+          backend.addArrayValues("x_gaussian_normal_mode_values", vibnormalmodes)
+
+      def onClose_x_gaussian_section_force_constant_matrix(self, backend, gIndex, section):
+
+          forcecnstvalues = []
+          forceconst = str(section["x_gaussian_force_constants"])
+          numbers = [float(s) for s in forceconst[1:].replace("'","").replace(",","").replace("]","").replace("\\n","").replace("D","E").replace(" ."," 0.").replace(" -."," -0.").split()]
+          length = len(numbers)
+          dim = int(((1 + 8 * length)**0.5 - 1) / 2) 
+          cartforceconst = np.zeros([dim, dim])
+          forcecnstvalues = np.append(forcecnstvalues, numbers) 
+          if dim > 6:
+             l = 0
+             for i in range(0,5):
+                for k in range(0,i+1):
+                   l = l + 1
+                   cartforceconst[i,k] = forcecnstvalues[l-1]
+             for i in range(5,dim):
+                for k in range(0,5):
+                   l = l + 1
+                   cartforceconst[i,k] = forcecnstvalues[l-1]
+             for i in range(5,dim-2): 
+                for k in range(5,i+1):
+                   l = l + 1
+                   cartforceconst[i,k] = forcecnstvalues[l-1]
+             for i in range(dim-2,dim):
+                for k in range(5,dim-2):
+                   l = l + 1
+                   cartforceconst[i,k] = forcecnstvalues[l-1]
+             for i in range(dim-2,dim):
+                for k in range(i,dim):
+                   l = l + 1
+                   cartforceconst[i,k] = forcecnstvalues[l-1]
+          elif dim == 6:
+             l = 0
+             for i in range(0,5):
+                for k in range(0,i+1):
+                   l = l + 1
+                   cartforceconst[i,k] = forcecnstvalues[l-1]
+             for i in range(5,dim):
+                for k in range(0,5):
+                   l = l + 1
+                   cartforceconst[i,k] = forcecnstvalues[l-1]
+             for i in range(dim,dim):
+                for k in range(i,dim):
+                   l = l + 1
+                   cartforceconst[i,k] = forcecnstvalues[l-1]
+ 
+          for i in range(0,dim):
+             for k in range(i+1,dim):
+                 cartforceconst[i,k] = cartforceconst[k,i]
+
+          cartforceconst = convert_unit(cartforceconst, "forceAu / bohr", "J / (meter**2)")
+
+          backend.addArrayValues("x_gaussian_force_constant_values", cartforceconst) 
 
 # which values to cache or forward (mapping meta name -> CachingLevel)
 cachingLevelForMetaName = {
@@ -412,6 +630,7 @@ cachingLevelForMetaName = {
         "x_gaussian_atom_z_coord": CachingLevel.Cache,
         "x_gaussian_atomic_number": CachingLevel.Cache,
         "x_gaussian_section_geometry": CachingLevel.Ignore,
+        "x_gaussian_natoms": CachingLevel.Cache,
         "x_gaussian_section_total_scf_one_geometry": CachingLevel.Cache,
         "x_gaussian_geometry_optimization_converged": CachingLevel.Cache,
         "x_gaussian_section_scf_iteration": CachingLevel.Cache,
@@ -420,10 +639,11 @@ cachingLevelForMetaName = {
         "x_gaussian_atom_y_force": CachingLevel.Cache,
         "x_gaussian_atom_z_force": CachingLevel.Cache,
         "x_gaussian_section_atom_forces": CachingLevel.Ignore, 
-        "x_gaussian_section_frequencies": CachingLevel.Cache,
+        "x_gaussian_section_frequencies": CachingLevel.Forward,
         "x_gaussian_atomic_masses": CachingLevel.Cache, 
         "x_gaussian_section_eigenvalues": CachingLevel.Cache,
         "x_gaussian_section_orbital_symmetries": CachingLevel.Cache,
+        "x_gaussian_section_molecular_multipoles": CachingLevel.Cache,
 }
 
 if __name__ == "__main__":
