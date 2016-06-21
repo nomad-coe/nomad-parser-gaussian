@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import str
+from builtins import range
+from builtins import object
 import setup_paths
 from nomadcore.simple_parser import mainFunction, SimpleMatcher as SM
 from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
@@ -546,23 +550,23 @@ class GaussianParserContext(object):
 
           if len(vibfreqs) % 3 == 0:
              k = 0
-             for p in range(0,len(vibfreqs) / 3):
+             for p in range(0,len(vibfreqs) // 3):
                 M = len(disps)/len(vibfreqs) * (p+1) 
                 for m in range(3):
-                  for n in range(M - len(disps)/len(vibfreqs),M,3):
+                  for n in range(M - len(disps) // len(vibfreqs),M,3):
                     for l in range(3):
                       dispsnew[k] = disps[3*(n + m) + l]
                       k = k + 1
           elif len(vibfreqs) % 3 != 0:
              k = 0
              for p in range(len(vibfreqs)-1,0,-3):
-                M = (len(disps) - len(disps)/len(vibfreqs)) / p 
+                M = (len(disps) - len(disps) // len(vibfreqs)) // p
                 for m in range(3):
-                  for n in range(M - len(disps)/len(vibfreqs),M,3):
+                  for n in range(M - len(disps) // len(vibfreqs),M,3):
                     for l in range(3):
                       dispsnew[k] = disps[3*(n + m) + l]
                       k = k + 1
-             for m in range(len(disps)/len(vibfreqs)):
+             for m in range(len(disps) // len(vibfreqs)):
                    dispsnew[k] = disps[k]
                    k = k + 1
 
