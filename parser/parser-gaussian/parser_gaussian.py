@@ -35,7 +35,7 @@ mainFileDescription = SM(
                       SM(r"\s*Cite this work as:"),
                       SM(r"\s*Gaussian [0-9]+, Revision [A-Za-z0-9.]*,"),
                       SM(r"\s\*\*\*\*\*\*\*\*\*\*\*\**"),
-                      SM(r"\s*(?P<program_name>Gaussian)\s*(?P<program_version>[0-9]+):\s*(?P<x_gaussian_program_implementation>[A-Za-z0-9-.]+)\s*(?P<x_gaussian_program_release_date>[0-9][0-9]?\-[A-Z][a-z][a-z]\-[0-9]+)"),
+                      SM(r"\s*Gaussian\s*(?P<program_version>[0-9]+):\s*(?P<x_gaussian_program_implementation>[A-Za-z0-9-.]+)\s*(?P<x_gaussian_program_release_date>[0-9][0-9]?\-[A-Z][a-z][a-z]\-[0-9]+)"),
                       SM(r"\s*(?P<x_gaussian_program_execution_date>[0-9][0-9]?\-[A-Z][a-z][a-z]\-[0-9]+)"),
                       ]
              ),
