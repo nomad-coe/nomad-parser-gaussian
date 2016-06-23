@@ -10,6 +10,8 @@ testing:
     - git submodule foreach git checkout master
     - git submodule foreach git pull
     - sbt gaussian/test
+    - export PYTHONEXE=/labEnv/bin/python
+    - sbt gaussian/test
   only:
     - master
   tags:
