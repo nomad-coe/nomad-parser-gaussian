@@ -24,7 +24,7 @@ object GaussianParser extends SimpleExternalParserGenerator(
   mainFileRe = """\s*Gaussian, Inc\.  All Rights Reserved\.\s*
 \s*
 \s*This is part of the Gaussian\(R\) [0-9]* program.""".r,
-  cmd = Seq(DefaultPythonInterpreter.python2Exe(), "${envDir}/parsers/gaussian/parser/parser-gaussian/parser_gaussian.py",
+  cmd = Seq(DefaultPythonInterpreter.pythonExe(), "${envDir}/parsers/gaussian/parser/parser-gaussian/parser_gaussian.py",
     "--uri", "${mainFileUri}", "${mainFilePath}"),
   resList = Seq(
     "parser-gaussian/parser_gaussian.py",
