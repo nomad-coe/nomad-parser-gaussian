@@ -10,7 +10,13 @@ from nomadcore.unit_conversion.unit_conversion import convert_unit
 import os, sys, json, logging
 import numpy as np
 import ase
-import csv
+import re
+
+############################################################
+# This is the parser for the output file of Gaussian.
+############################################################
+
+logger = logging.getLogger("nomad.GaussianParser")
 
 # description of the output
 mainFileDescription = SM(
@@ -49,14 +55,23 @@ mainFileDescription = SM(
                       SM(r"\s*%[Nn][Pp]roc=(?P<x_gaussian_number_of_processors>[A-Za-z0-9.]*)")
                       ]
              ),
+               SM (name = 'SectionMethod',
+               sections = ['section_method'],
+                   startReStr = r"\s*#",
+                   forwardMatch = True,
+                   subMatchers = [
+                       SM(r"\s*(?P<x_gaussian_settings>([a-zA-Z0-9-/=(),#*+:]*\s*)+)"),
+                       SM(r"\s*(?P<x_gaussian_settings>([a-zA-Z0-9-/=(),#*+:]*\s*)+)")
+                       ]
+             ),
                SM(name = 'charge_multiplicity_natoms',
-               sections  = ['x_gaussian_section_system'],
+               sections = ['section_system'],
 		  startReStr = r"\s*Charge =",
-                  subFlags = SM.SubFlags.Sequenced,
+                  subFlags = SM.SubFlags.Unordered,
                   forwardMatch = True,
                   subMatchers = [
-                      SM(r"\s*Charge =\s*(?P<x_gaussian_total_charge>[-+0-9]+) Multiplicity =\s*(?P<x_gaussian_spin_target_multiplicity>[0-9]+)"),
-                      SM(r"\s*NAtoms=(?P<x_gaussian_natoms>[0-9]+)"),
+                      SM(r"\s*Charge =\s*(?P<x_gaussian_total_charge>[-+0-9]*) Multiplicity =\s*(?P<x_gaussian_spin_target_multiplicity>[0-9]*)"),
+                      SM(r"\s*NAtoms=\s*(?P<x_gaussian_natoms>[0-9]*)\s*NQM="),
                       ]
              ),
                SM(name = 'atomic masses',
@@ -80,7 +95,7 @@ mainFileDescription = SM(
                   startReStr = "\s*Standard orientation:",
                   repeats = True,
                   forwardMatch = True,
-                  sections = ['x_gaussian_section_single_configuration_calculation'],
+                  sections = ['section_single_configuration_calculation'],
                   subMatchers = [
                   SM(name = 'geometry',
                    sections  = ['x_gaussian_section_geometry'],
@@ -92,13 +107,13 @@ mainFileDescription = SM(
                     ]
                 ),
                     SM(name = 'TotalEnergyScfGaussian',
-                    sections  = ['x_gaussian_section_scf_iteration'],
+                    sections  = ['section_scf_iteration'],
                     startReStr = r"\s*Cycle\s+[0-9]+",
                     forwardMatch = True,
                     repeats = True, 
                     subMatchers = [
                     SM(r"\s*Cycle\s+[0-9]+"),
-                    SM(r"\s*E=\s*(?P<x_gaussian_energy_total_scf_iteration__hartree>[-+0-9.]+)\s*Delta-E=\s*(?P<x_gaussian_delta_energy_total_scf_iteration__hartree>[-+0-9.]+)")
+                    SM(r"\s*E=\s*(?P<energy_total_scf_iteration__hartree>[-+0-9.]+)\s*Delta-E=\s*(?P<x_gaussian_delta_energy_total_scf_iteration__hartree>[-+0-9.]+)")
                     ]
                 ), 
                     SM(name = 'TotalEnergyScfConverged',
@@ -106,20 +121,20 @@ mainFileDescription = SM(
                     startReStr = r"\s*SCF Done",
                     forwardMatch = True,
                     subMatchers = [
-                    SM(r"\s*(?P<x_gaussian_single_configuration_calculation_converged>SCF Done):\s*[()A-Za-z0-9-]+\s*=\s*(?P<x_gaussian_energy_total_scf_converged__hartree>[-+0-9.]+)")
+                    SM(r"\s*(?P<x_gaussian_single_configuration_calculation_converged>SCF Done):\s*[(),A-Za-z0-9-]+\s*=\s*(?P<energy_total__hartree>[-+0-9.]+)")
                     ]  
                 ),
                     SM(name = 'RealSpinValue',
                     sections  = ['x_gaussian_section_real_spin_squared'],
-                    startReStr = r"\s*Convg\s*=",
+                    startReStr = r"\s*Annihilation of the first spin contaminant",
                     forwardMatch = True,
+                    repeats = True,
                     subMatchers = [
-                     SM(r"\s*[A-Z][*][*][0-9]\s*=\s*(?P<x_gaussian_spin_S2>[0-9.]+)"),
                      SM(r"\s*Annihilation of the first spin contaminant"),
-                     SM(r"\s*[A-Z][*][*][0-9]\s*before annihilation\s*[0-9.,]+\s*after\s*(?P<x_gaussian_after_annihilation_spin_S2>[0-9.]+)")
+                     SM(r"\s*[A-Z][*][*][0-9]\s*before annihilation\s*(?P<spin_S2>[0-9.]+),\s*after\s*(?P<x_gaussian_after_annihilation_spin_S2>[0-9.]+)")
                      ]
                 ),
-                   SM(name = 'ForcesScfGaussian',
+                   SM(name = 'ForcesGaussian',
                    sections  = ['x_gaussian_section_atom_forces'],
                    startReStr = "\s*Center\s+Atomic\s+Forces ",
                    forwardMatch = True,
@@ -161,7 +176,7 @@ mainFileDescription = SM(
                 startReStr = r"\s*The electronic state is",
                 forwardMatch = True,
                 subMatchers = [
-                      SM(r"\s*The electronic state is\s*(?P<x_gaussian_elstate_symmetry>[A-Z0-9-]+)[.]")
+                      SM(r"\s*The electronic state is\s*(?P<x_gaussian_elstate_symmetry>[A-Z0-9-']+)[.]")
                       ]
              ),
                 SM(name = 'Eigenvalues',
@@ -179,8 +194,8 @@ mainFileDescription = SM(
              ),
                 SM(name = 'Multipoles',
                   sections = ['x_gaussian_section_molecular_multipoles'],
-                  startReStr = r"\s*Charge=",
-                  forwardMatch = True,
+                  startReStr = r"\s*Electronic spatial extent",
+                  forwardMatch = False,
                   subMatchers = [
                       SM(r"\s*Charge=(?P<charge>\s*[-0-9.]+)"),
                       SM(r"\s*Dipole moment "), 
@@ -254,7 +269,6 @@ mainFileDescription = SM(
       ])
     ])
 
-
 # loading metadata from nomad-meta-info/meta_info/nomad_meta_info/gaussian.nomadmetainfo.json
 metaInfoPath = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../../../../nomad-meta-info/meta_info/nomad_meta_info/gaussian.nomadmetainfo.json"))
 metaInfoEnv, warnings = loadJsonFile(filePath = metaInfoPath, dependencyLoader = None, extraArgsHandling = InfoKindEl.ADD_EXTRA_ARGS, uri = None)
@@ -295,6 +309,8 @@ class GaussianParserContext(object):
 
       def startedParsing(self, path, parser):
         self.parser = parser
+        # save metadata
+        self.metaInfoEnv = self.parser.parserBuilder.metaInfoEnv
         # allows to reset values if the same superContext is used to parse different files
         self.initialize_values()
 
@@ -313,8 +329,10 @@ class GaussianParserContext(object):
         for i in range(len(xCoord)):
           atom_numbers[i] = numbers[i]
           atomic_symbols[i] = ase.data.chemical_symbols[atom_numbers[i]]
-        backend.addArrayValues("x_gaussian_atom_labels", atomic_symbols)
-        backend.addArrayValues("x_gaussian_atom_positions", atom_coords)
+        gIndexTmp = backend.openSection("section_system")
+        backend.addArrayValues("atom_labels", atomic_symbols)
+        backend.addArrayValues("atom_positions", atom_coords)
+        backend.closeSection("section_system", gIndexTmp)
 
       def onClose_x_gaussian_section_atom_forces(self, backend, gIndex, section):
         xForce = section["x_gaussian_atom_x_force"]
@@ -325,29 +343,28 @@ class GaussianParserContext(object):
            atom_forces[i,0] = xForce[i]
            atom_forces[i,1] = yForce[i]
            atom_forces[i,2] = zForce[i]
-        backend.addArrayValues("x_gaussian_atom_forces", atom_forces)
+        backend.addArrayValues("atom_forces_raw", atom_forces)
 
       def onClose_section_run(self, backend, gIndex, section):
         """Trigger called when section_run is closed.
         """
-                # write geometry optimization convergence
-        gIndexTmp = backend.openSection('x_gaussian_section_single_configuration_calculation')
+        # write geometry optimization convergence
+        gIndexTmp = backend.openSection('section_single_configuration_calculation')
         if self.geoConvergence is not None:
             backend.addValue('x_gaussian_geometry_optimization_converged', self.geoConvergence)
-        # use values of control.in which was parsed in section_method
-        backend.closeSection('x_gaussian_section_single_configuration_calculation', gIndexTmp)
+        backend.closeSection('section_single_configuration_calculation', gIndexTmp)
 
-      def onClose_x_gaussian_section_single_configuration_calculation(self, backend, gIndex, section):
+      def onClose_section_single_configuration_calculation(self, backend, gIndex, section):
         """Trigger called when section_single_configuration_calculation is closed.
          Write number of SCF iterations and convergence.
          Check for convergence of geometry optimization.
         """
         # write number of SCF iterations
-        self.scfenergyconverged = section['x_gaussian_energy_total_scf_converged']
+        self.scfenergyconverged = section['energy_total']
         backend.addValue('x_gaussian_number_of_scf_iterations', self.scfIterNr)
         # write SCF convergence and reset
         backend.addValue('x_gaussian_single_configuration_calculation_converged', self.scfConvergence)
-        backend.addValue('x_gaussian_energy_total_scf_converged', self.scfenergyconverged)
+        backend.addValue('energy_total', self.scfenergyconverged)
         self.scfConvergence = False
         # check for geometry optimization convergence
         if section['x_gaussian_geometry_optimization_converged'] is not None:
@@ -364,7 +381,7 @@ class GaussianParserContext(object):
         # start with -1 since zeroth iteration is the initialization
         self.scfIterNr = -1
 
-      def onClose_x_gaussian_section_scf_iteration(self, backend, gIndex, section):
+      def onClose_section_scf_iteration(self, backend, gIndex, section):
         # count number of SCF iterations
         self.scfIterNr += 1
         # check for SCF convergence
@@ -377,7 +394,9 @@ class GaussianParserContext(object):
              atmass = []
              mass = [float(f) for f in atomicmasses[1:].replace("'","").replace(",","").replace("]","").replace(" ."," 0.").replace(" -."," -0.").split()]
              atmass = np.append(atmass, mass)
+             gIndexTmp = backend.openSection("section_system")
              backend.addArrayValues("x_gaussian_masses", atmass)   
+             backend.closeSection("section_system", gIndexTmp)
        
       def onClose_x_gaussian_section_eigenvalues(self, backend, gIndex, section):
           eigenenergies = str(section["x_gaussian_alpha_occ_eigenvalues_values"])
@@ -426,20 +445,20 @@ class GaussianParserContext(object):
              symoccbeta = str(section["x_gaussian_beta_occ_symmetry_values"])
              symvirbeta = str(section["x_gaussian_beta_vir_symmetry_values"])
 
-          symmetry = [str(f) for f in symoccalpha[1:].replace("'","").replace(",","").replace("(","").replace(")","").replace("]","").split()]
+          symmetry = [str(f) for f in symoccalpha[1:].replace(",","").replace("(","").replace(")","").replace("]","").replace("'A","A").replace("\\'","'").replace("A''","A'").replace("'E","E").replace("G'","G").replace("\"A'\"","A'").split()]
           sym1 = []
           sym1 = np.append(sym1, symmetry)  
-          symmetry = [str(f) for f in symviralpha[1:].replace("'","").replace(",","").replace("(","").replace(")","").replace("]","").split()]
+          symmetry = [str(f) for f in symviralpha[1:].replace(",","").replace("(","").replace(")","").replace("]","").replace("'A","A").replace("\\'","'").replace("A''","A'").replace("\"A'\"","A'").replace("'E","E").replace("G'","G").split()]
           sym2 = []
           sym2 = np.append(sym2, symmetry)
           symmetrycon = np.concatenate((sym1, sym2), axis=0)
           backend.addArrayValues("x_gaussian_alpha_symmetries", symmetrycon) 
 
           if(section["x_gaussian_beta_occ_symmetry_values"]):
-             symmetry = [str(f) for f in symoccbeta[1:].replace("'","").replace(",","").replace("(","").replace(")","").replace("]","").split()]
+             symmetry = [str(f) for f in symoccbeta[1:].replace(",","").replace("(","").replace(")","").replace("]","").replace("'A","A").replace("\\'","'").replace("A''","A'").replace("\"A'\"","A'").replace("'E","E").replace("G'","G").split()]
              sym1 = []
              sym1 = np.append(sym1, symmetry)
-             symmetry = [str(f) for f in symvirbeta[1:].replace("'","").replace(",","").replace("(","").replace(")","").replace("]","").split()]
+             symmetry = [str(f) for f in symvirbeta[1:].replace(",","").replace("(","").replace(")","").replace("]","").replace("'A","A").replace("\\'","'").replace("A''","A'").replace("\"A'\"","A'").replace("'E","E").replace("G'","G").split()]
              sym2 = []
              sym2 = np.append(sym2, symmetry)
              symmetrycon = np.concatenate((sym1, sym2), axis=0)
@@ -551,26 +570,28 @@ class GaussianParserContext(object):
           if len(vibfreqs) % 3 == 0:
              k = 0
              for p in range(0,len(vibfreqs) // 3):
-                M = len(disps)/len(vibfreqs) * (p+1) 
+                M = int(len(disps)/len(vibfreqs)) * (p+1) 
                 for m in range(3):
-                  for n in range(M - len(disps) // len(vibfreqs),M,3):
+                  for n in range(M - int(len(disps) / len(vibfreqs)),M,3):
                     for l in range(3):
                       dispsnew[k] = disps[3*(n + m) + l]
                       k = k + 1
           elif len(vibfreqs) % 3 != 0:
              k = 0
              for p in range(len(vibfreqs)-1,0,-3):
-                M = (len(disps) - len(disps) // len(vibfreqs)) // p
+                M = (len(disps) - int(len(disps) / len(vibfreqs))) // p
                 for m in range(3):
-                  for n in range(M - len(disps) // len(vibfreqs),M,3):
+                  for n in range(M - int(len(disps) / len(vibfreqs)),M,3):
                     for l in range(3):
                       dispsnew[k] = disps[3*(n + m) + l]
                       k = k + 1
-             for m in range(len(disps) // len(vibfreqs)):
+             for m in range(int(len(disps) / len(vibfreqs))):
                    dispsnew[k] = disps[k]
                    k = k + 1
 
           vibnormalmodes = np.append(vibnormalmodes, dispsnew)
+          natoms = int(len(disps) / len(vibfreqs) / 3)
+          vibnormalmodes = np.reshape(vibnormalmodes,(len(vibfreqs),natoms,3))
           backend.addArrayValues("x_gaussian_normal_mode_values", vibnormalmodes)
 
       def onClose_x_gaussian_section_force_constant_matrix(self, backend, gIndex, section):
@@ -627,17 +648,538 @@ class GaussianParserContext(object):
 
           backend.addArrayValues("x_gaussian_force_constant_values", cartforceconst) 
 
+      def onClose_section_method(self, backend, gIndex, section):
+        # handling of xc functional
+        # two functions to convert hybrid_xc_coeff to the correct weight
+        def GGA_weight(x):
+          return 1.0 - x
+        def HF_weight(x):
+          return x
+       # TODO vdW functionals and double-hybrid functionals
+       # Dictionary for conversion of xc functional name in aims to metadata format.
+       # The individual x and c components of the functional are given as dictionaries.
+       # Possible keys of such a dictionary are 'name', 'weight', and 'convert'.
+       # If 'weight' is not given it is not written.
+       # With 'convert', a funtion is specified how hybrid_xc_coeff is converted to the correct weight for this xc component.
+        xcDict = {
+              'S':           [{'name': 'LDA_X'}],
+              'XA':	     [{'name': 'X_ALPHA'}],
+              'VWN5':        [{'name': 'LDA_C_VWN'}],
+              'VWN':         [{'name': 'LDA_C_VWN_3'}],
+              'LSDA':        [{'name': 'LDA_X'}, {'name': 'LDA_C_VWN'}], 
+              'B':           [{'name': 'GGA_X_B88'}],
+              'BLYP':        [{'name': 'GGA_C_LYP'}, {'name': 'GGA_X_B88'}],
+              'PBE':         [{'name': 'GGA_C_PBE'}],
+              'PBEPBE':      [{'name': 'GGA_C_PBE'}, {'name': 'GGA_X_PBE'}],
+              'PBEH':        [{'name': 'GGA_X_PBEH'}],
+              'WPBEH':       [{'name': 'GGA_X_WPBEH'}],
+              'PW91PW91':    [{'name': 'GGA_C_PW91'}, {'name': 'GGA_X_PW91'}],
+              'M06L':        [{'name': 'MGGA_C_M06_L'}, {'name': 'MGGA_X_M06_L'}],
+              'M11L':        [{'name': 'MGGA_C_M11_L'}, {'name': 'MGGA_X_M11_L'}],
+              'SOGGA11':     [{'name': 'GGA_XC_SOGGA11'}],
+              'MN12L':       [{'name': 'GGA_XC_MN12L'}],
+              'N12':         [{'name': 'GGA_C_N12'}, {'name': 'GGA_X_N12'}],
+              'VSXC':        [{'name': 'GGA_XC_VSXC'}],
+              'HCTH93':      [{'name': 'GGA_XC_HCTH_93'}],
+              'HCTH147':     [{'name': 'GGA_XC_HCTH_147'}],
+              'HCTH407':     [{'name': 'GGA_XC_HCTH_407'}],
+              'HCTH':        [{'name': 'GGA_XC_HCTH_407'}],
+              'B97D':        [{'name': 'GGA_XC_B97D'}],
+              'B97D3':       [{'name': 'GGA_XC_B97D3'}],
+              'MPW':         [{'name': 'GGA_X_MPW'}],
+              'G96':         [{'name': 'GGA_X_G96'}],
+              'O':           [{'name': 'GGA_X_O'}],
+              'BRX':         [{'name': 'GGA_X_BRX'}],
+              'PKZB':        [{'name': 'GGA_C_PKZB'}, {'name': 'GGA_X_PKZB'}],
+              'PL':          [{'name': 'GGA_C_PL'}],
+              'P86':         [{'name': 'GGA_C_P86'}],
+              'B95':         [{'name': 'GGA_C_B95'}],
+              'KCIS':        [{'name': 'GGA_C_KCIS'}],
+              'BRC':         [{'name': 'GGA_C_BRC'}],
+              'VP86':        [{'name': 'GGA_C_VP86'}],
+              'V5LYP':       [{'name': 'GGA_C_V5LYP'}],
+              'tHCTH':       [{'name': 'MGGA_XC_TAU_HCTH'}],
+              'TPSSTPSS':    [{'name': 'MGGA_C_TPSS'}, {'name': 'MGGA_X_TPSS'}],
+              'B3LYP':       [{'name': 'HYB_GGA_XC_B3LYP'}], 
+              'B3PW91':      [{'name': 'HYB_GGA_XC_B3PW91'}],
+              'B3P86':       [{'name': 'HYB_GGA_XC_B3P86'}], 
+              'B1B95':       [{'name': 'HYB_GGA_XC_B1B95'}],
+              'MPW1PW91':    [{'name': 'HYB_GGA_XC_MPW1PW91'}],
+              'MPW1LYP':     [{'name': 'HYB_GGA_XC_MPW1LYP'}],
+              'MPW1PBE':     [{'name': 'HYB_GGA_XC_MPW1PBE'}],
+              'MPW3PBE':     [{'name': 'HYB_GGA_XC_MPW3PBE'}],
+              'B98':         [{'name': 'HYB_GGA_XC_B98'}],
+              'B971':        [{'name': 'HYB_GGA_XC_B971'}],
+              'B972':        [{'name': 'HYB_GGA_XC_B972'}],
+              'O3LYP':       [{'name': 'HYB_GGA_XC_O3LYP'}], 
+              'TPSSh':       [{'name': 'HYB_GGA_XC_TPSSh'}],
+              'BMK':         [{'name': 'HYB_GGA_XC_BMK'}],
+              'X3LYP':       [{'name': 'HYB_GGA_XC_X3LYP'}],
+              'tHCTHhyb':    [{'name': 'HYB_GGA_XC_tHCTHHYB'}],
+              'BHANDH':      [{'name': 'HYB_GGA_XC_BHANDH'}],
+              'BHANDHLYP':   [{'name': 'HYB_GGA_XC_BHANDHLYP'}],
+              'APF':         [{'name': 'HYB_GGA_XC_APF'}],
+              'APFD':        [{'name': 'HYB_GGA_XC_APFD'}],
+              'B97D':        [{'name': 'HYB_GGA_XC_B97D'}],
+              'RHF':         [{'name': 'RHF_X'}],
+              'UHF':         [{'name': 'UHF_X'}],
+              'ROHF':        [{'name': 'ROHF_X'}],
+              'OHSE2PBE':    [{'name': 'HYB_GGA_XC_HSE03'}],
+              'HSEH1PBE':    [{'name': 'HYB_GGA_XC_HSE06'}],
+              'OHSE1PBE':    [{'name': 'HYB_GGA_XC_HSEOLD'}],
+              'PBEH1PBE':    [{'name': 'HYB_GGA_XC_PBEh1PBE'}],
+              'PBE1PBE':     [{'name': 'GGA_C_PBE'}, {'name': 'GGA_X_PBE', 'weight': 0.75, 'convert': GGA_weight}, {'name': 'HF_X', 'weight': 0.25, 'convert': HF_weight}],
+              'M05':         [{'name': 'HYB_MGGA_XC_M05'}],
+              'M052X':       [{'name': 'HYB_MGGA_XC_M05_2X'}],
+              'M06':         [{'name': 'HYB_MGGA_XC_M06'}],
+              'M062X':       [{'name': 'HYB_MGGA_XC_M06_2X'}],
+              'M06HF':       [{'name': 'HYB_MGGA_XC_M06_HF'}],
+              'M11':         [{'name': 'HYB_MGGA_XC_M11'}],
+              'SOGGAX11':    [{'name': 'HYB_MGGA_XC_SOGGA11_X'}],
+              'MN12SX':      [{'name': 'HYB_MGGA_XC_MN12_SX'}],
+              'N12SX':       [{'name': 'HYB_MGGA_XC_N12_SX'}],
+              'LC-WPBE':     [{'name': 'LC-WPBE'}],
+              'CAM-B3LYP':   [{'name': 'CAM-B3LYP'}],
+              'WB97':        [{'name': 'WB97'}],
+              'WB97X':       [{'name': 'WB97X'}],
+              'WB97XD':      [{'name': 'WB97XD'}],
+              'HISSBPBE':    [{'name': 'HISSBPBE'}],
+              'B2PLYP':      [{'name': 'B2PLYP'}],
+              'MPW2PLYP':    [{'name': 'MPW2PLYP'}],
+              'B2PLYPD':     [{'name': 'B2PLYPD'}],
+              'MPW2PLYPD':   [{'name': 'MPW2PLYPD'}],
+              'B97D3':       [{'name': 'B97D3'}], 
+              'B2PLYPD3':    [{'name': 'B2PLYPD3'}],
+              'MPW2PLYPD3':  [{'name': 'MPW2PLYPD3'}],
+              'LC-':         [{'name': 'Long-range corrected'}],
+             }
+
+        methodDict = {
+              'AMBER':     [{'name': 'Amber'}],
+              'DREIDING':  [{'name': 'Dreiding'}],
+              'UFF':       [{'name': 'UFF'}],
+              'AM1':       [{'name': 'AM1'}],
+              'PM3':       [{'name': 'PM3'}],
+              'PM3MM':     [{'name': 'PM3MM'}],
+              'PM6':       [{'name': 'PM6'}],
+              'PDDG':      [{'name': 'PDDG'}],
+              'CNDO':      [{'name': 'CNDO'}],
+              'INDO':      [{'name': 'INDO'}],
+              'MINDO':     [{'name': 'MINDO'}],
+              'MINDO3':    [{'name': 'MINDO3'}],
+              'ZINDO':     [{'name': 'ZINDO'}],
+              'ONIOM':     [{'name': 'ONIOM'}],
+              'RHF':       [{'name': 'RHF'}],
+              'UHF':       [{'name': 'UHF'}],
+              'ROHF':      [{'name': 'ROHF'}],
+              'GVB':       [{'name': 'GVB'}],
+              'DFT':       [{'name': 'DFT'}],
+              'CID':       [{'name': 'CID'}],
+              'CISD':      [{'name': 'CISD'}],
+              'CIS':       [{'name': 'CIS'}],
+              'BD':        [{'name': 'BD'}],
+              'CCD':       [{'name': 'CCD'}],
+              'CCSD':      [{'name': 'CCSD'}],
+              'EOMCCSD':   [{'name': 'EOMCCSD'}],
+              'QCISD':     [{'name': 'QCISD'}],
+              'MP2':       [{'name': 'MP2'}],
+              'MP3':       [{'name': 'MP3'}],
+              'MP4':       [{'name': 'MP4'}],
+              'MP5':       [{'name': 'MP5'}],
+              'CAS':       [{'name': 'CASSCF'}],
+              'CASSCF':    [{'name': 'CASSCF'}],
+              'G1':        [{'name': 'G1'}],
+              'G2':        [{'name': 'G2'}],
+              'G2MP2':     [{'name': 'G2MP2'}],
+              'G3':        [{'name': 'G3'}],
+              'G3MP2':     [{'name': 'G3MP2'}],
+              'G3B3':      [{'name': 'G3B3'}],
+              'G3MP2B3':   [{'name': 'G3MP2B3'}],
+              'G4':        [{'name': 'G4'}],
+              'G4MP2':     [{'name': 'G4MP2'}],
+              'CBSExtrap':   [{'name': 'CBSExtrapolate'}],
+              'CBSExtrapolate':   [{'name': 'CBSExtrapolate'}],
+              'CBS-4M':    [{'name': 'CBS-4M'}],
+              'CBS-4O':    [{'name': 'CBS-4O'}],
+              'CBS-QB3':   [{'name': 'CBS-QB3'}],
+              'CBS-QB3O':  [{'name': 'CBS-QB3O'}],
+              'CBS-APNO':  [{'name': 'CBS-APNO'}],
+              'W1U':       [{'name': 'W1U'}],
+              'W1BD':      [{'name': 'W1BD'}],
+              'W1RO':      [{'name': 'W1RO'}],
+             }
+
+        basissetDict = {
+              'STO-3G':      [{'name': 'STO-3G'}],
+              '3-21G':       [{'name': '3-21G'}],
+              '6-21G':       [{'name': '6-21G'}],
+              '4-31G':       [{'name': '4-31G'}],
+              '6-31G':       [{'name': '6-31G'}],
+              '6-311G':      [{'name': '6-311G'}],
+              'D95V':        [{'name': 'D95V'}],
+              'D95':         [{'name': 'D95'}],
+              'CC-PVDZ':     [{'name': 'cc-pVDZ'}],
+              'CC-PVTZ':     [{'name': 'cc-pVTZ'}],
+              'CC-PVQZ':     [{'name': 'cc-pVQZ'}],
+              'CC-PV5Z':     [{'name': 'cc-pV5Z'}],
+              'CC-PV6Z':     [{'name': 'cc-pV6Z'}],
+              'SV':          [{'name': 'SV'}],
+              'SVP':         [{'name': 'SVP'}],
+              'TZV':         [{'name': 'TZV'}],
+              'TZVP':        [{'name': 'TZVP'}],              
+              'DEF2SV':      [{'name': 'Def2SV'}],
+              'DEF2SVP':     [{'name': 'Def2SVP'}],
+              'DEF2SVPP':    [{'name': 'Def2SVPP'}],
+              'DEF2TZV':     [{'name': 'Def2TZV'}],
+              'DEF2TZVP':    [{'name': 'Def2TZVP'}],
+              'DEF2TZVPP':   [{'name': 'Def2TZVPP'}],
+              'DEF2QZV':     [{'name': 'Def2QZV'}],
+              'DEF2QZVP':    [{'name': 'Def2QZVP'}],
+              'DEF2QZVPP':   [{'name': 'Def2QZVPP'}],
+              'QZVP':        [{'name': 'QZVP'}],
+              'MIDIX':       [{'name': 'MidiX'}],
+              'EPR-II':      [{'name': 'EPR-II'}],
+              'EPR-III':     [{'name': 'EPR-III'}],
+              'UGBS':        [{'name': 'UGBS'}],     
+              'MTSMALL':     [{'name': 'MTSmall'}],
+              'DGDZVP':      [{'name': 'DGDZVP'}],
+              'DGDZVP2':     [{'name': 'DGDZVP2'}],
+              'DGTZVP':      [{'name': 'DGTZVP'}],
+              'CBSB3':       [{'name': 'CBSB3'}],  
+              'CBSB7':       [{'name': 'CBSB7'}],
+              'SHC':         [{'name': 'SHC'}],
+              'SEC':         [{'name': 'SHC'}],
+              'CEP-4G':      [{'name': 'CEP-4G'}],
+              'CEP-31G':     [{'name': 'CEP-31G'}],
+              'CEP-121G':    [{'name': 'CEP-121G'}],
+              'LANL1':       [{'name': 'LANL1'}],
+              'LANL2':       [{'name': 'LANL2'}],
+              'SDD':         [{'name': 'SDD'}],
+              'OLDSDD':      [{'name': 'OldSDD'}], 
+              'SDDALL':      [{'name': 'SDDAll'}],
+              'GEN':         [{'name': 'General'}],
+              'CHKBAS':      [{'name': 'CHKBAS'}],
+              'EXTRABASIS':  [{'name': 'ExtraBasis'}],
+              'DGA1':        [{'name': 'DGA1'}],
+              'DGA2':        [{'name': 'DGA2'}],
+              'SVPFIT':      [{'name': 'SVPFit'}],
+              'TZVPFIT':     [{'name': 'TZVPFit'}],
+              'W06':         [{'name': 'W06'}],
+              'CHF':         [{'name': 'CHF'}],
+             }
+
+        global xc, method, basisset, xcWrite, methodWrite, basissetWrite, methodreal, basissetreal, exc, corr, exccorr, methodprefix
+        xc = None
+        method = None
+        basisset = None
+        xcWrite = False
+        methodWrite = False
+        basissetWrite = False
+        methodreal = None
+        basissetreal = None 
+        methodprefix = None
+        exc = None
+        corr = None
+        exccorr = None
+        settings = section["x_gaussian_settings"]
+        settings = map(str.strip, settings)  
+        settings = [''.join(map(str,settings))]
+        settings = str(settings)
+        settings = re.sub('[-]{2,}', '', settings)
+
+        method1 = settings.replace("['#p ","").replace("['#P ","")
+        method1 = method1.upper()
+
+        if 'ONIOM' not in method1: 
+          if settings.find("/") >= 0:
+               method1 = settings.split('/')[0].replace("['#p ","").replace("['#P ","")
+               method1 = method1.upper()
+               for x in method1.split():
+                  method2 = str(x)
+                  if method2 != 'RHF' and method2 != 'UHF' and method2 != 'ROHF':
+                     if (method2[0] == 'R' and method2[0:2] != 'RO') or method2[0] == 'U':
+                        methodprefix = method2[0] 
+                        method2 = method2[1:]
+                     elif method2[0:2] == 'RO':
+                        methodprefix = method2[0:2]
+                        method2 = method2[2:]
+                  if method2[0] == 'S' or method2[0] == 'B' or method2[0] == 'O':
+                     exc = method2[0]
+                     corr = method2[1:]
+                     if exc in xcDict.keys() and corr in xcDict.keys():
+                        xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                  if method2[0:3] == 'BRX' or method2[0:3] == 'G96':
+                     exc = method2[0:3]
+                     corr = method2[3:]
+                  if exc in xcDict.keys() and corr in xcDict.keys():
+                      xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                  if method2[0:5] == 'WPBEH':
+                     exc = method2[0:5]
+                     corr = method2[6:]
+                     if exc in xcDict.keys() and corr in xcDict.keys():
+                        xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                  if method2[0:3] == 'LC-':
+                     exccorr = method2[3:]
+                     if exccorr in xcDict.keys():
+                        xc = 'LC-' + xcDict.get([exccorr][-1])
+                  if method2 in xcDict.keys():
+                     xc = method2
+                     xcWrite= True
+                     method = 'DFT'
+                  if method2 in methodDict.keys():
+                     method = method2
+                     methodWrite = True
+                     methodreal = method2
+                  else:
+                     for n in range(2,9):
+                        if method2[0:n] in methodDict.keys():
+                           method = method2[0:n]
+                           methodWrite = True  
+                           methodreal = method2
+                        if method2[0:9] == 'CBSEXTRAP':
+                           method = method2[0:9]
+                           methodWrite = True
+                           methodreal = method2 
+               rest = settings.split('/')[1]
+               rest = rest.upper() 
+               for x in rest.split():
+                  if x in basissetDict.keys():
+                     basisset = x
+                     basissetWrite = True
+                     basissetreal = x
+                  if 'D95' in x:
+                     method2 = x
+                     basisset = method2[0:3]
+                     basissetWrite = True
+                     basissetreal = method2
+                  if 'AUG-' in x:
+                     method2 = x
+                     basisset = method2[4:]
+                     basissetWrite = True
+                     basissetreal = method2
+                  if 'UGBS' in x:
+                     method2 = x
+                     basisset = method2[0:4]
+                     basissetWrite = True
+                     basissetreal = method2
+                  if 'CBSB7' in x:
+                     method2 = x
+                     basisset = method2[0:5]
+                     basissetWrite = True
+                     basissetreal = method2
+                  if '6-31' in x:
+                     method2 = x
+                     if '6-311' in x:
+                        basisset = '6-311G'
+                        basissetWrite = True
+                        basissetreal = '6-311' + method2[5:]
+                     else:
+                        basisset = '6-31G'
+                        basissetWrite = True
+                        basissetreal = '6-31' + method2[4:]
+          else:
+               method1 = settings.split()
+               for x in method1: 
+                  method2 = str(x)
+                  method2 = method2.upper() 
+                  if method2 != 'RHF' and method2 != 'UHF' and method2 != 'ROHF':
+                    if (method2[0] == 'R' and method2[0:2] != 'RO') or method2[0] == 'U':
+                      methodprefix = method2[0] 
+                      method2 = method2[1:]
+                    elif method2[0:2] == 'RO':
+                      methodprefix = method2[0:2] 
+                      method2 = method2[2:]
+                  if method2[0] == 'S' or method2[0] == 'B' or method2[0] == 'O':
+                   if method2[0] in xcDict.keys() and method2[1:] in xcDict.keys():
+                      exc = method2[0]
+                      corr = method2[1:]
+                      xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                  if method2[0:3] == 'BRX' or method2[0:3] == 'G96':
+                   exc = method2[0:3]
+                   corr = method2[3:]
+                   if exc in xcDict.keys() and corr in xcDict.keys():
+                      xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                  if method2[0:5] == 'WPBEH':
+                   exc = method2[0:5]
+                   corr = method2[6:]
+                   if exc in xcDict.keys() and corr in xcDict.keys():
+                      xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                  if method2[0:3] == 'LC-':
+                   exccorr = method2[3:]
+                   if exccorr in xcDict.keys():
+                      xc = 'LC-' + xcDict.get([exccorr][-1])
+                  if method2 in xcDict.keys(): 
+                   xc = method2
+                   xcWrite= True
+                   method = 'DFT'
+                  if method2 in methodDict.keys():
+                   method = method2 
+                   methodWrite = True
+                   methodreal = method2
+                  else:
+                   for n in range(2,9):
+                      if method2[0:n] in methodDict.keys():
+                         method = method2[0:n]
+                         methodWrite = True
+                         methodreal = method2
+                      if method2[0:9] == 'CBSEXTRAP':
+                         method = method2[0:9]
+                         methodWrite = True
+                         methodreal = method2
+                  if method2 in basissetDict.keys():
+                   basisset = method2
+                   basissetWrite = True
+                   basissetreal = method2
+                  if 'D95' in method2:
+                   basisset = method2[0:3]
+                   basissetWrite = True
+                   basissetreal = method2
+                  if 'AUG-' in method2:
+                   basisset = method2[4:]
+                   basissetWrite = True
+                   basissetreal = method2
+                  if 'UGBS' in method2:
+                   basisset = method2[0:4]
+                   basissetWrite = True
+                   basissetreal = method2
+                  if 'CBSB7' in method2:
+                   basisset = method2[0:5]
+                   basissetWrite = True
+                   basissetreal = method2
+                  if '6-31' in method2:
+                   if '6-311' in method2:
+                      basisset = '6-311G'
+                      basissetWrite = True
+                      basissetreal = '6-311' + method2[5:]
+                   else:
+                      basisset = '6-31G'
+                      basissetWrite = True
+                      basissetreal = '6-31' + method2[4:]
+
+# special options for ONIOM calculations
+        else:
+          method = 'ONIOM'       
+          methodWrite = True
+          method1 = settings.split()
+          for x in method1:
+             method2 = str(x)
+             method2 = method2.upper()
+             if 'ONIOM' in method2:
+                methodreal = method2
+
+# description for hybrid coefficient
+        xcHybridCoeffDescr = 'hybrid coefficient $\\alpha$'
+        hseFunc = 'HSEh1PBE'
+# functionals where hybrid_xc_coeff is written
+        writeHybridCoeff = ['B3LYP', 'OHSE2PBE', 'HSEh1PBE', 'PBE1PBE' ]
+        if xc is not None:
+          # check if only one xc keyword was found in output
+          if len([xc]) > 1:
+              logger.error("Found %d settings for the xc functional: %s. This leads to an undefined behavior of the calculation and no metadata can be written for xc." % (len(xc), xc))
+          else:
+              backend.superBackend.addValue('xc', [xc][-1])
+            # check for hybrid_xc_coeff
+#                hybridCoeff = valuesDict.get('hybrid_xc_coeff')
+            # write hybrid_xc_coeff for certain functionals
+#                if hybridCoeff is not None and xc[-1] in writeHybridCoeff:
+#                    backend.superBackend.addValue('hybrid_xc_coeff', hybridCoeff[-1])
+            # convert xc functional for metadata
+              if xcWrite:
+              # get list of xc components according to parsed value
+                  xcList = xcDict.get([xc][-1])
+                  if xcList is not None:
+                  # loop over the xc components
+                      for xcItem in xcList:
+                          xcName = xcItem.get('name')
+                          if xcName is not None:
+                          # write section and XC_functional_name
+                              gIndexTmp = backend.openSection('section_XC_functionals')
+                              backend.addValue('XC_functional_name', xcName)
+                            # write hybrid_xc_coeff for B3LYP and HSE03 into XC_functional_parameters
+#                                if hybridCoeff is not None and xc[-1] in ['B3LYP', 'OHSE2PBE']:
+#                                    backend.addValue('XC_functional_parameters', {xcHybridCoeffDescr: hybridCoeff[-1]})
+                            # write hybrid_xc_coeff for HSE06
+#                                elif xc[-1] == hseFunc:
+                                # add hybrid_xc_coeff
+#                                    if hybridCoeff is not None:
+#                                        hybrid = hybridCoeff[-1]
+#                                    else:
+#                                        hybrid = 0.25
+#                                    parameters[xcHybridCoeffDescr] = hybrid
+#                                    backend.addValue('XC_functional_parameters', parameters)
+                            # adjust weight of functionals that are affected by hybrid_xc_coeff
+#                                elif hybridCoeff is not None and 'convert' in xcItem:
+#                                    backend.addValue('XC_functional_weight', xcItem['convert'](hybridCoeff[-1]))
+                            # write weight if present for current xcItem
+#                                else:
+#                                    xcWeight = xcItem.get('weight')
+#                                    if xcWeight is not None:
+#                                        backend.addValue('XC_functional_weight', xcWeight)
+#                                backend.closeSection('section_XC_functionals', gIndexTmp)
+                          else:
+                              logger.error("The dictionary for xc functional '%s' does not have the key 'name'. Please correct the dictionary xcDict in %s." % (xc[-1], os.path.basename(__file__)))
+                  else:
+                      logger.error("The xc functional '%s' could not be converted for the metadata. Please add it to the dictionary xcDict in %s." % (xc[-1], os.path.basename(__file__)))
+
+# Write electronic structure method to metadata
+
+        if method is not None:
+          # check if only one method keyword was found in output
+          if len([method]) > 1:
+              logger.error("Found %d settings for the method: %s. This leads to an undefined behavior of the calculation and no metadata can be written for the method." % (len(method), method))
+          else:
+              backend.superBackend.addValue('method', [method][-1])
+          methodList = methodDict.get([method][-1])
+          if methodWrite:
+               if methodList is not None:
+        # loop over the method components
+                  for methodItem in methodList:
+                        methodName = methodItem.get('name')
+                        if methodName is not None:
+                 # write section and method name
+                           gIndexTmp = backend.openSection('x_gaussian_section_elstruc_method')
+                           if methodprefix != None:
+                              backend.addValue('x_gaussian_elstruc_method_name', str(methodprefix) + methodreal)
+                           else:
+                              backend.addValue('x_gaussian_elstruc_method_name', methodreal)
+                        else:
+                              logger.error("The dictionary for method '%s' does not have the key 'name'. Please correct the dictionary methodDict in %s." % (method[-1], os.path.basename(__file__)))
+               else:
+                      logger.error("The method '%s' could not be converted for the metadata. Please add it to the dictionary methodDict in %s." % (method[-1], os.path.basename(__file__)))
+
+#Write basis sets to metadata
+
+        if basisset is not None:
+          # check if only one method keyword was found in output
+          if len([basisset]) > 1:
+              logger.error("Found %d settings for the basis set: %s. This leads to an undefined behavior of the calculation and no metadata can be written for the basis set." % (len(method), method))
+          else:
+              backend.superBackend.addValue('basisset', [basisset])
+          basissetList = basissetDict.get([basisset][-1])
+          if basissetWrite:
+               if basissetList is not None:
+        # loop over the basis set components
+                  for basissetItem in basissetList:
+                        basissetName = basissetItem.get('name')
+                        if basissetName is not None:
+                 # write section and method name
+                           gIndexTmp = backend.openSection('section_basis_set_atom_centered')
+                           backend.addValue('basis_set_atom_centered_short_name', basissetreal)
+                        else:
+                              logger.error("The dictionary for basis set '%s' does not have the key 'name'. Please correct the dictionary basissetDict in %s." % (basisset[-1], os.path.basename(__file__)))
+               else:
+                      logger.error("The basis set '%s' could not be converted for the metadata. Please add it to the dictionary basissetDict in %s." % (basisset[-1], os.path.basename(__file__)))
+
+
 # which values to cache or forward (mapping meta name -> CachingLevel)
+
 cachingLevelForMetaName = {
         "x_gaussian_atom_x_coord": CachingLevel.Cache,
         "x_gaussian_atom_y_coord": CachingLevel.Cache,
         "x_gaussian_atom_z_coord": CachingLevel.Cache,
         "x_gaussian_atomic_number": CachingLevel.Cache,
         "x_gaussian_section_geometry": CachingLevel.Ignore,
-        "x_gaussian_natoms": CachingLevel.Cache,
-        "x_gaussian_section_total_scf_one_geometry": CachingLevel.Cache,
         "x_gaussian_geometry_optimization_converged": CachingLevel.Cache,
-        "x_gaussian_section_scf_iteration": CachingLevel.Cache,
         "x_gaussian_single_configuration_calculation_converged": CachingLevel.Ignore,
         "x_gaussian_atom_x_force": CachingLevel.Cache,
         "x_gaussian_atom_y_force": CachingLevel.Cache,
