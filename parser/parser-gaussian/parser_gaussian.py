@@ -364,7 +364,7 @@ class GaussianParserContext(object):
         backend.addValue('x_gaussian_number_of_scf_iterations', self.scfIterNr)
         # write SCF convergence and reset
         backend.addValue('x_gaussian_single_configuration_calculation_converged', self.scfConvergence)
-        backend.addValue('energy_total', self.scfenergyconverged)
+        backend.addValue('energy_total', self.scfenergyconverged[-1])
         self.scfConvergence = False
         # check for geometry optimization convergence
         if section['x_gaussian_geometry_optimization_converged'] is not None:
@@ -1154,7 +1154,7 @@ class GaussianParserContext(object):
           if len([basisset]) > 1:
               logger.error("Found %d settings for the basis set: %s. This leads to an undefined behavior of the calculation and no metadata can be written for the basis set." % (len(method), method))
           else:
-              backend.superBackend.addValue('basisset', [basisset])
+              backend.superBackend.addValue('basis_set', basisset)
           basissetList = basissetDict.get([basisset][-1])
           if basissetWrite:
                if basissetList is not None:
