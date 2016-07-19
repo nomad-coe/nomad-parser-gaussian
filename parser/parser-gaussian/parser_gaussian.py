@@ -125,11 +125,7 @@ mainFileDescription = SM(
                     startReStr = r"\s*E2 =\s*",
                     forwardMatch = True,
                     subMatchers = [
-<<<<<<< HEAD
                      SM(r"\s*E2 =\s*(?P<x_gaussian_mp2_correction_energy__hartree>[-+0-9EeDd.]+)\s*EUMP2 =\s*(?P<x_gaussian_mp2_energy__hartree>[-+0-9EeDd.]+)"),
-=======
-                     SM(r"\s*E2 =\s*(?P<x_gaussian_mp2_correction_energy__hartree>[-+0-9EeDd.]+)\s*EUMP2 =\s*(?P<x_gaussian_mp2_energy__hartree>[-+0-9EeDd.]+)"),  
->>>>>>> Gaussian parser with ground and excited state energies
                      SM(r"\s*E3=\s*(?P<x_gaussian_mp3_correction_energy__hartree>[-+0-9EeDd.]+)\s*EUMP3=\s*(?P<x_gaussian_mp3_energy__hartree>[-+0-9EeDd.]+)\s*"),
                      SM(r"\s*E4\(DQ\)=\s*(?P<x_gaussian_mp4dq_correction_energy__hartree>[-+0-9EeDd.]+)\s*UMP4\(DQ\)=\s*(?P<x_gaussian_mp4dq_energy__hartree>[-+0-9EeDd.]+)\s*"),
                      SM(r"\s*E4\(SDQ\)=\s*(?P<x_gaussian_mp4sdq_correction_energy__hartree>[-+0-9EeDd.]+)\s*UMP4\(SDQ\)=\s*(?P<x_gaussian_mp4sdq_energy__hartree>[-+0-9EeDd.]+)"),
@@ -495,16 +491,9 @@ class GaussianParserContext(object):
          Check for convergence of geometry optimization.
         """
         # write SCF convergence and reset
-<<<<<<< HEAD
-<<<<<<< HEAD
         backend.addValue('x_gaussian_single_configuration_calculation_converged', self.scfConvergence)
         backend.addValue('energy_total', self.scfenergyconverged[-1])
-=======
         backend.addValue('single_configuration_calculation_converged', self.scfConvergence)
->>>>>>> Gaussian parser with ground and excited state energies
-=======
-        backend.addValue('single_configuration_calculation_converged', self.scfConvergence)
->>>>>>> Gaussian parser with ground and excited state energies
         self.scfConvergence = False
         # start with -1 since zeroth iteration is the initialization
         self.scfIterNr = -1
@@ -1083,11 +1072,7 @@ class GaussianParserContext(object):
                      methodreal = method2
                   else:
                      for n in range(2,9):
-<<<<<<< HEAD
                         if method2[0:n] in methodDict.keys():
-=======
-                        if method2[0:n] in methodDict.keys(): 
->>>>>>> Gaussian parser with ground and excited state energies
                           if method2[0:n] in xcDict.keys():
                             method = 'DFT'
                             methodWrite = True
@@ -1098,11 +1083,7 @@ class GaussianParserContext(object):
                           if method2[0:9] == 'CBSEXTRAP':
                             method = method2[0:9]
                             methodWrite = True
-<<<<<<< HEAD
                             methodreal = method2
-=======
-                            methodreal = method2 
->>>>>>> Gaussian parser with ground and excited state energies
                rest = settings.split('/')[1].replace("'","").replace("]","")
                rest = rest.upper() 
                for x in rest.split():
@@ -1151,11 +1132,7 @@ class GaussianParserContext(object):
                         basissetWrite = True
                         basissetreal = '6-31' + method2[4:]
                   slashes = settings.count('/')
-<<<<<<< HEAD
                   if slashes > 1:
-=======
-                  if slashes > 1: 
->>>>>>> Gaussian parser with ground and excited state energies
                     rest2 = settings.split()[1]
                     rest2 = rest2.upper()
                     for z in rest2.split('/'):
