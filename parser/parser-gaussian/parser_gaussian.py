@@ -491,8 +491,6 @@ class GaussianParserContext(object):
          Check for convergence of geometry optimization.
         """
         # write SCF convergence and reset
-        backend.addValue('x_gaussian_single_configuration_calculation_converged', self.scfConvergence)
-        backend.addValue('energy_total', self.scfenergyconverged[-1])
         backend.addValue('single_configuration_calculation_converged', self.scfConvergence)
         self.scfConvergence = False
         # start with -1 since zeroth iteration is the initialization
