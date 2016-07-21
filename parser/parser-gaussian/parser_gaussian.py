@@ -64,7 +64,7 @@ mainFileDescription = SM(
                        SM(r"\s*(?P<x_gaussian_settings>([a-zA-Z0-9-/=(),#*+:]*\s*)+)")
                        ]
              ),
-               SM(name = 'charge_multiplicity_cell_natoms',
+               SM(name = 'charge_multiplicity_cell',
                sections = ['section_system'],
 		  startReStr = r"\s*Charge =",
                   endReStr = r"\s*Leave Link  101\s*",
@@ -348,6 +348,8 @@ mainFileDescription = SM(
                  SM(r"\s*G2MP2 Energy=\s*(?P<x_gaussian_model_energy__hartree>[-+0-9.]+)"),
                  SM(r"\s*G3 Energy=\s*(?P<x_gaussian_model_energy__hartree>[-+0-9.]+)"),
                  SM(r"\s*G3MP2 Energy=\s*(?P<x_gaussian_model_energy__hartree>[-+0-9.]+)"),
+                 SM(r"\s*G4 Energy=\s*(?P<x_gaussian_model_energy__hartree>[-+0-9.]+)"),
+                 SM(r"\s*G4MP2 Energy=\s*(?P<x_gaussian_model_energy__hartree>[-+0-9.]+)"),
                  SM(r"\s*CBS-4 Energy=\s*(?P<x_gaussian_model_energy__hartree>[-+0-9.]+)"),
                  SM(r"\s*CBS-q Energy=\s*(?P<x_gaussian_model_energy__hartree>[-+0-9.]+)"),
                  SM(r"\s*CBS-Q Energy=\s*(?P<x_gaussian_model_energy__hartree>[-+0-9.]+)"),
@@ -429,8 +431,9 @@ class GaussianParserContext(object):
           Write convergence of geometry optimization.
           Variables are reset to ensure clean start for new run.
           """
+          global sampling_method
+          sampling_method = ""
           # write geometry optimization convergence
-          sampling_method = None
           gIndexTmp = backend.openSection('section_frame_sequence')
           backend.addValue('geometry_optimization_converged', self.geoConvergence)
           backend.closeSection('section_frame_sequence', gIndexTmp)
@@ -597,59 +600,60 @@ class GaussianParserContext(object):
           cha = str([char])
           charge = [float(f) for f in cha[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").replace('"','').split()]
 
-          dipx = section["dipole_moment_x"]
-          dipy = section["dipole_moment_y"]
-          dipz = section["dipole_moment_z"]
-          dip = str([dipx, dipy, dipz])
-          dipoles = [float(f) for f in dip[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()]
-          dipoles = convert_unit(dipoles, "debye", "coulomb * meter")
+          if(section["dipole_moment_x"]):
+            dipx = section["dipole_moment_x"]
+            dipy = section["dipole_moment_y"]
+            dipz = section["dipole_moment_z"]
+            dip = str([dipx, dipy, dipz])
+            dipoles = [float(f) for f in dip[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()]
+            dipoles = convert_unit(dipoles, "debye", "coulomb * meter")
 
-          quadxx = section["quadrupole_moment_xx"]
-          quadxy = section["quadrupole_moment_xy"]
-          quadyy = section["quadrupole_moment_yy"]
-          quadxz = section["quadrupole_moment_xz"]
-          quadyz = section["quadrupole_moment_yz"]
-          quadzz = section["quadrupole_moment_zz"]
-          quad = str([quadxx, quadxy, quadyy, quadxz, quadyz, quadzz])
-          quadrupoles = [float(f) for f in quad[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()] 
-          if(section["quadrupole_moment_xx"]): 
-             quadrupoles = convert_unit(quadrupoles, "debye * angstrom", "coulomb * meter**2")
+          if(section["quadrupole_moment_xx"]):
+            quadxx = section["quadrupole_moment_xx"]
+            quadxy = section["quadrupole_moment_xy"]
+            quadyy = section["quadrupole_moment_yy"]
+            quadxz = section["quadrupole_moment_xz"]
+            quadyz = section["quadrupole_moment_yz"]
+            quadzz = section["quadrupole_moment_zz"]
+            quad = str([quadxx, quadxy, quadyy, quadxz, quadyz, quadzz])
+            quadrupoles = [float(f) for f in quad[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()] 
+            quadrupoles = convert_unit(quadrupoles, "debye * angstrom", "coulomb * meter**2")
 
-          octaxxx = section["octapole_moment_xxx"]
-          octayyy = section["octapole_moment_yyy"]
-          octazzz = section["octapole_moment_zzz"]
-          octaxyy = section["octapole_moment_xyy"]
-          octaxxy = section["octapole_moment_xxy"]
-          octaxxz = section["octapole_moment_xxz"]
-          octaxzz = section["octapole_moment_xzz"]
-          octayzz = section["octapole_moment_yzz"]
-          octayyz = section["octapole_moment_yyz"]
-          octaxyz = section["octapole_moment_xyz"]
-          octa = str([octaxxx, octayyy, octazzz, octaxyy, octaxxy, octaxxz, octaxzz, octayzz, octayyz, octaxyz])
-          octapoles = [float(f) for f in octa[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()]
           if(section["octapole_moment_xxx"]):
-             octapoles = convert_unit(octapoles, "debye * angstrom**2", "coulomb * meter**3")
+            octaxxx = section["octapole_moment_xxx"]
+            octayyy = section["octapole_moment_yyy"]
+            octazzz = section["octapole_moment_zzz"]
+            octaxyy = section["octapole_moment_xyy"]
+            octaxxy = section["octapole_moment_xxy"]
+            octaxxz = section["octapole_moment_xxz"]
+            octaxzz = section["octapole_moment_xzz"]
+            octayzz = section["octapole_moment_yzz"]
+            octayyz = section["octapole_moment_yyz"]
+            octaxyz = section["octapole_moment_xyz"]
+            octa = str([octaxxx, octayyy, octazzz, octaxyy, octaxxy, octaxxz, octaxzz, octayzz, octayyz, octaxyz])
+            octapoles = [float(f) for f in octa[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()]
+            octapoles = convert_unit(octapoles, "debye * angstrom**2", "coulomb * meter**3")
 
-          hexadecaxxxx = section["hexadecapole_moment_xxxx"]
-          hexadecayyyy = section["hexadecapole_moment_yyyy"]
-          hexadecazzzz = section["hexadecapole_moment_zzzz"]
-          hexadecaxxxy = section["hexadecapole_moment_xxxy"]
-          hexadecaxxxz = section["hexadecapole_moment_xxxz"]
-          hexadecayyyx = section["hexadecapole_moment_yyyx"]
-          hexadecayyyz = section["hexadecapole_moment_yyyz"]
-          hexadecazzzx = section["hexadecapole_moment_zzzx"]
-          hexadecazzzy = section["hexadecapole_moment_zzzy"]
-          hexadecaxxyy = section["hexadecapole_moment_xxyy"]
-          hexadecaxxzz = section["hexadecapole_moment_xxzz"]
-          hexadecayyzz = section["hexadecapole_moment_yyzz"]
-          hexadecaxxyz = section["hexadecapole_moment_xxyz"]
-          hexadecayyxz = section["hexadecapole_moment_yyxz"]
-          hexadecazzxy = section["hexadecapole_moment_zzxy"]
-          hexa = str([hexadecaxxxx, hexadecayyyy, hexadecazzzz, hexadecaxxxy, hexadecaxxxz, hexadecayyyx, hexadecayyyz,
-          hexadecazzzx, hexadecazzzy, hexadecaxxyy, hexadecaxxzz, hexadecayyzz, hexadecaxxyz, hexadecayyxz, hexadecazzxy])
-          hexadecapoles = [float(f) for f in hexa[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()]
           if(section["hexadecapole_moment_xxxx"]):
-             hexadecapoles = convert_unit(hexadecapoles, "debye * angstrom**3", "coulomb * meter**4")
+            hexadecaxxxx = section["hexadecapole_moment_xxxx"]
+            hexadecayyyy = section["hexadecapole_moment_yyyy"]
+            hexadecazzzz = section["hexadecapole_moment_zzzz"]
+            hexadecaxxxy = section["hexadecapole_moment_xxxy"]
+            hexadecaxxxz = section["hexadecapole_moment_xxxz"]
+            hexadecayyyx = section["hexadecapole_moment_yyyx"]
+            hexadecayyyz = section["hexadecapole_moment_yyyz"]
+            hexadecazzzx = section["hexadecapole_moment_zzzx"]
+            hexadecazzzy = section["hexadecapole_moment_zzzy"]
+            hexadecaxxyy = section["hexadecapole_moment_xxyy"]
+            hexadecaxxzz = section["hexadecapole_moment_xxzz"]
+            hexadecayyzz = section["hexadecapole_moment_yyzz"]
+            hexadecaxxyz = section["hexadecapole_moment_xxyz"]
+            hexadecayyxz = section["hexadecapole_moment_yyxz"]
+            hexadecazzxy = section["hexadecapole_moment_zzxy"]
+            hexa = str([hexadecaxxxx, hexadecayyyy, hexadecazzzz, hexadecaxxxy, hexadecaxxxz, hexadecayyyx, hexadecayyyz,
+            hexadecazzzx, hexadecazzzy, hexadecaxxyy, hexadecaxxzz, hexadecayyzz, hexadecaxxyz, hexadecayyxz, hexadecazzxy])
+            hexadecapoles = [float(f) for f in hexa[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()]
+            hexadecapoles = convert_unit(hexadecapoles, "debye * angstrom**3", "coulomb * meter**4")
 
           if(section["quadrupole_moment_xx"]):
              multipoles = np.hstack((charge, dipoles, quadrupoles, octapoles, hexadecapoles))
@@ -706,9 +710,10 @@ class GaussianParserContext(object):
                    k = k + 1
 
           vibnormalmodes = np.append(vibnormalmodes, dispsnew)
-          natoms = int(len(disps) / len(vibfreqs) / 3)
-          vibnormalmodes = np.reshape(vibnormalmodes,(len(vibfreqs),natoms,3))
-          backend.addArrayValues("x_gaussian_normal_mode_values", vibnormalmodes)
+          if len(vibfreqs) != 0:
+            natoms = int(len(disps) / len(vibfreqs) / 3)
+            vibnormalmodes = np.reshape(vibnormalmodes,(len(vibfreqs),natoms,3))
+            backend.addArrayValues("x_gaussian_normal_mode_values", vibnormalmodes)
 
       def onClose_x_gaussian_section_force_constant_matrix(self, backend, gIndex, section):
 
@@ -1022,13 +1027,14 @@ class GaussianParserContext(object):
         settings = [''.join(map(str,settings))]
         settings = str(settings)
         settings = re.sub('[-]{2,}', '', settings)
+        backend.addValue("x_gaussian_settings_corrected", settings)
 
-        method1 = settings.replace("['#p ","").replace("['#P ","")
+        method1 = settings.replace("['#p ","").replace("['#P ","").replace("['#","")
         method1 = method1.upper()
 
         if 'ONIOM' not in method1: 
           if settings.find("/") >= 0:
-               method1 = settings.split('/')[0].replace("['#p ","").replace("['#P ","")
+               method1 = settings.split('/')[0].replace("['#p ","").replace("['#P ","").replace("['#","")
                method1 = method1.upper()
                for x in method1.split():
                   method2 = str(x)
@@ -1227,7 +1233,7 @@ class GaussianParserContext(object):
              method2 = method2.upper()
              if 'ONIOM' in method2:
                 methodreal = method2
-
+        
 # description for hybrid coefficient
         xcHybridCoeffDescr = 'hybrid coefficient $\\alpha$'
         hseFunc = 'HSEH1PBE'
@@ -1238,7 +1244,7 @@ class GaussianParserContext(object):
           if len([xc]) > 1:
               logger.error("Found %d settings for the xc functional: %s. This leads to an undefined behavior of the calculation and no metadata can be written for xc." % (len(xc), xc))
           else:
-              backend.superBackend.addValue('xc', [xc][-1])
+              backend.superBackend.addValue('x_gaussian_xc', [xc][-1])
             # check for hybrid_xc_coeff
 #                hybridCoeff = valuesDict.get('hybrid_xc_coeff')
             # write hybrid_xc_coeff for certain functionals
@@ -1276,7 +1282,7 @@ class GaussianParserContext(object):
 #                                    xcWeight = xcItem.get('weight')
 #                                    if xcWeight is not None:
 #                                        backend.addValue('XC_functional_weight', xcWeight)
-#                                backend.closeSection('section_XC_functionals', gIndexTmp)
+                              backend.closeSection('section_XC_functionals', gIndexTmp)
                           else:
                               logger.error("The dictionary for xc functional '%s' does not have the key 'name'. Please correct the dictionary xcDict in %s." % (xc[-1], os.path.basename(__file__)))
                   else:
@@ -1289,7 +1295,7 @@ class GaussianParserContext(object):
           if len([method]) > 1:
               logger.error("Found %d settings for the method: %s. This leads to an undefined behavior of the calculation and no metadata can be written for the method." % (len(method), method))
           else:
-              backend.superBackend.addValue('method', [method][-1])
+              backend.superBackend.addValue('x_gaussian_method', [method][-1])
           methodList = methodDict.get([method][-1])
           if methodWrite:
                if methodList is not None:
@@ -1301,8 +1307,10 @@ class GaussianParserContext(object):
                            gIndexTmp = backend.openSection('x_gaussian_section_elstruc_method')
                            if methodprefix != None and methodreal != None:
                               backend.addValue('x_gaussian_elstruc_method_name', str(methodprefix) + methodreal)
+                              backend.closeSection('x_gaussian_section_elstruc_method', gIndexTmp)
                            elif methodreal != None:
                               backend.addValue('x_gaussian_elstruc_method_name', methodreal)
+                              backend.closeSection('x_gaussian_section_elstruc_method', gIndexTmp)
                         else:
                               logger.error("The dictionary for method '%s' does not have the key 'name'. Please correct the dictionary methodDict in %s." % (method[-1], os.path.basename(__file__)))
                else:
@@ -1326,6 +1334,7 @@ class GaussianParserContext(object):
                  # write section and basis set name(s)
                            gIndexTmp = backend.openSection('section_basis_set_atom_centered')
                            backend.addValue('basis_set_atom_centered_short_name', basissetreal)
+                           backend.closeSection('section_basis_set_atom_centered', gIndexTmp)
                         else:
                               logger.error("The dictionary for basis set '%s' does not have the key 'name'. Please correct the dictionary basissetDict in %s." % (basisset[-1], os.path.basename(__file__)))
                else:
@@ -1375,17 +1384,86 @@ cachingLevelForMetaName = {
         "x_gaussian_atom_y_coord": CachingLevel.Cache,
         "x_gaussian_atom_z_coord": CachingLevel.Cache,
         "x_gaussian_atomic_number": CachingLevel.Cache,
-        "x_gaussian_section_geometry": CachingLevel.Ignore,
+        "x_gaussian_section_geometry": CachingLevel.Forward,
         "x_gaussian_atom_x_force": CachingLevel.Cache,
         "x_gaussian_atom_y_force": CachingLevel.Cache,
         "x_gaussian_atom_z_force": CachingLevel.Cache,
         "x_gaussian_section_frequencies": CachingLevel.Forward,
-        "x_gaussian_atomic_masses": CachingLevel.Cache, 
-        "x_gaussian_section_eigenvalues": CachingLevel.Cache,
-        "x_gaussian_section_orbital_symmetries": CachingLevel.Cache,
-        "x_gaussian_section_molecular_multipoles": CachingLevel.Cache,
-        "x_gaussian_single_configuration_calculation_converged": CachingLevel.Cache,
-        "x_gaussian_geometry_optimization_converged": CachingLevel.Cache,
+        "x_gaussian_frequency_values": CachingLevel.Cache,
+        "x_gaussian_frequencies": CachingLevel.ForwardAndCache,
+        "x_gaussian_reduced_masses": CachingLevel.Cache,
+        "x_gaussian_red_masses": CachingLevel.ForwardAndCache,
+        "x_gaussian_normal_modes": CachingLevel.Cache,
+        "x_gaussian_normal_mode_values": CachingLevel.ForwardAndCache,
+        "x_gaussian_atomic_masses": CachingLevel.ForwardAndCache, 
+        "x_gaussian_section_force_constant_matrix": CachingLevel.Forward,
+        "x_gaussian_force_constant_values": CachingLevel.ForwardAndCache,
+        "x_gaussian_force_constants": CachingLevel.Cache,
+        "x_gaussian_section_eigenvalues": CachingLevel.Forward,
+        "x_gaussian_alpha_occ_eigenvalues_values":CachingLevel.Cache,
+        "x_gaussian_alpha_vir_eigenvalues_values":CachingLevel.Cache,
+        "x_gaussian_alpha_eigenvalues": CachingLevel.ForwardAndCache,
+        "x_gaussian_alpha_occupations": CachingLevel.ForwardAndCache,
+        "x_gaussian_beta_occ_eigenvalues_values":CachingLevel.Cache,
+        "x_gaussian_beta_vir_eigenvalues_values":CachingLevel.Cache,
+        "x_gaussian_beta_eigenvalues": CachingLevel.ForwardAndCache,
+        "x_gaussian_beta_occupations": CachingLevel.ForwardAndCache,
+        "x_gaussian_section_orbital_symmetries": CachingLevel.Forward,
+        "x_gaussian_alpha_occ_symmetry_values":CachingLevel.Cache,
+        "x_gaussian_alpha_vir_symmetry_values":CachingLevel.Cache,
+        "x_gaussian_beta_occ_symmetry_values":CachingLevel.Cache,
+        "x_gaussian_beta_vir_symmetry_values":CachingLevel.Cache,  
+        "x_gaussian_alpha_symmetries": CachingLevel.ForwardAndCache,
+        "x_gaussian_beta_symmetries": CachingLevel.ForwardAndCache,
+        "x_gaussian_section_molecular_multipoles": CachingLevel.Forward,
+        "dipole_moment_x": CachingLevel.Cache,
+        "dipole_moment_y": CachingLevel.Cache,
+        "dipole_moment_z": CachingLevel.Cache,
+        "quadrupole_moment_xx": CachingLevel.Cache,  
+        "quadrupole_moment_yy": CachingLevel.Cache,
+        "quadrupole_moment_zz": CachingLevel.Cache,
+        "quadrupole_moment_xy": CachingLevel.Cache,
+        "quadrupole_moment_xz": CachingLevel.Cache,
+        "quadrupole_moment_yz": CachingLevel.Cache,
+        "octapole_moment_xxx": CachingLevel.Cache,
+        "octapole_moment_yyy": CachingLevel.Cache,
+        "octapole_moment_zzz": CachingLevel.Cache,
+        "octapole_moment_xyy": CachingLevel.Cache,
+        "octapole_moment_xxy": CachingLevel.Cache,
+        "octapole_moment_xxz": CachingLevel.Cache,
+        "octapole_moment_xzz": CachingLevel.Cache,
+        "octapole_moment_yzz": CachingLevel.Cache,
+        "octapole_moment_yyz": CachingLevel.Cache,
+        "octapole_moment_xyz": CachingLevel.Cache,
+        "hexadecapole_moment_xxxx": CachingLevel.Cache,
+        "hexadecapole_moment_yyyy": CachingLevel.Cache,
+        "hexadecapole_moment_zzzz": CachingLevel.Cache,
+        "hexadecapole_moment_xxxy": CachingLevel.Cache,
+        "hexadecapole_moment_xxxz": CachingLevel.Cache,
+        "hexadecapole_moment_yyyx": CachingLevel.Cache,
+        "hexadecapole_moment_yyyz": CachingLevel.Cache,
+        "hexadecapole_moment_zzzx": CachingLevel.Cache,
+        "hexadecapole_moment_zzzy": CachingLevel.Cache,
+        "hexadecapole_moment_xxyy": CachingLevel.Cache,
+        "hexadecapole_moment_xxzz": CachingLevel.Cache,
+        "hexadecapole_moment_yyzz": CachingLevel.Cache,
+        "hexadecapole_moment_xxyz": CachingLevel.Cache,
+        "hexadecapole_moment_yyxz": CachingLevel.Cache,
+        "hexadecapole_moment_zzxy": CachingLevel.Cache, 
+        "x_gaussian_molecular_multipole_values": CachingLevel.ForwardAndCache,
+        "x_gaussian_single_configuration_calculation_converged": CachingLevel.ForwardAndCache,
+        "x_gaussian_geometry_optimization_converged": CachingLevel.ForwardAndCache,
+        "section_method": CachingLevel.Forward,
+        "x_gaussian_section_elstruc_method": CachingLevel.Cache,
+        "x_gaussian_elstruc_method_name": CachingLevel.ForwardAndCache,
+        "XC_functional_name": CachingLevel.ForwardAndCache, 
+        "basis_set_atom_centered_short_name": CachingLevel.ForwardAndCache,
+        "x_gaussian_settings": CachingLevel.Cache,
+        "x_gaussian_settings_corrected": CachingLevel.ForwardAndCache,
+        "section_system": CachingLevel.Forward,
+        "x_gaussian_atomic_masses": CachingLevel.Cache,
+        "x_gaussian_masses": CachingLevel.ForwardAndCache,
+        "x_gaussian_number_of_atoms": CachingLevel.ForwardAndCache
 }
 
 if __name__ == "__main__":
