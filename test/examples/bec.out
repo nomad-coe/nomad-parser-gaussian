@@ -1,0 +1,584 @@
+ Entering Gaussian System, Link 0=g09
+ Initial command:
+ /usr/local/gaussian/g09.d01.em64t.legacy.linda/g09/l1.exe "/tmp/rdj3/g09-21434/Gau-26733.inp" -scrdir="/tmp/rdj3/g09-21434/"
+ Entering Link 1 = /usr/local/gaussian/g09.d01.em64t.legacy.linda/g09/l1.exe PID=     26734.
+  
+ Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2013,
+            Gaussian, Inc.  All Rights Reserved.
+  
+ This is part of the Gaussian(R) 09 program.  It is based on
+ the Gaussian(R) 03 system (copyright 2003, Gaussian, Inc.),
+ the Gaussian(R) 98 system (copyright 1998, Gaussian, Inc.),
+ the Gaussian(R) 94 system (copyright 1995, Gaussian, Inc.),
+ the Gaussian 92(TM) system (copyright 1992, Gaussian, Inc.),
+ the Gaussian 90(TM) system (copyright 1990, Gaussian, Inc.),
+ the Gaussian 88(TM) system (copyright 1988, Gaussian, Inc.),
+ the Gaussian 86(TM) system (copyright 1986, Carnegie Mellon
+ University), and the Gaussian 82(TM) system (copyright 1983,
+ Carnegie Mellon University). Gaussian is a federally registered
+ trademark of Gaussian, Inc.
+  
+ This software contains proprietary and confidential information,
+ including trade secrets, belonging to Gaussian, Inc.
+  
+ This software is provided under written license and may be
+ used, copied, transmitted, or stored only in accord with that
+ written license.
+  
+ The following legend is applicable only to US Government
+ contracts under FAR:
+  
+                    RESTRICTED RIGHTS LEGEND
+  
+ Use, reproduction and disclosure by the US Government is
+ subject to restrictions as set forth in subparagraphs (a)
+ and (c) of the Commercial Computer Software - Restricted
+ Rights clause in FAR 52.227-19.
+  
+ Gaussian, Inc.
+ 340 Quinnipiac St., Bldg. 40, Wallingford CT 06492
+  
+  
+ ---------------------------------------------------------------
+ Warning -- This program may not be used in any manner that
+ competes with the business of Gaussian, Inc. or will provide
+ assistance to any competitor of Gaussian, Inc.  The licensee
+ of this program is prohibited from giving any competitor of
+ Gaussian, Inc. access to this program.  By using this program,
+ the user acknowledges that Gaussian, Inc. is engaged in the
+ business of creating and licensing software in the field of
+ computational chemistry and represents and warrants to the
+ licensee that it is not a competitor of Gaussian, Inc. and that
+ it will not use this program in any manner prohibited above.
+ ---------------------------------------------------------------
+  
+
+ Cite this work as:
+ Gaussian 09, Revision D.01,
+ M. J. Frisch, G. W. Trucks, H. B. Schlegel, G. E. Scuseria, 
+ M. A. Robb, J. R. Cheeseman, G. Scalmani, V. Barone, B. Mennucci, 
+ G. A. Petersson, H. Nakatsuji, M. Caricato, X. Li, H. P. Hratchian, 
+ A. F. Izmaylov, J. Bloino, G. Zheng, J. L. Sonnenberg, M. Hada, 
+ M. Ehara, K. Toyota, R. Fukuda, J. Hasegawa, M. Ishida, T. Nakajima, 
+ Y. Honda, O. Kitao, H. Nakai, T. Vreven, J. A. Montgomery, Jr., 
+ J. E. Peralta, F. Ogliaro, M. Bearpark, J. J. Heyd, E. Brothers, 
+ K. N. Kudin, V. N. Staroverov, T. Keith, R. Kobayashi, J. Normand, 
+ K. Raghavachari, A. Rendell, J. C. Burant, S. S. Iyengar, J. Tomasi, 
+ M. Cossi, N. Rega, J. M. Millam, M. Klene, J. E. Knox, J. B. Cross, 
+ V. Bakken, C. Adamo, J. Jaramillo, R. Gomperts, R. E. Stratmann, 
+ O. Yazyev, A. J. Austin, R. Cammi, C. Pomelli, J. W. Ochterski, 
+ R. L. Martin, K. Morokuma, V. G. Zakrzewski, G. A. Voth, 
+ P. Salvador, J. J. Dannenberg, S. Dapprich, A. D. Daniels, 
+ O. Farkas, J. B. Foresman, J. V. Ortiz, J. Cioslowski, 
+ and D. J. Fox, Gaussian, Inc., Wallingford CT, 2013.
+ 
+ ******************************************
+ Gaussian 09:  EM64L-G09RevD.01 24-Apr-2013
+                13-May-2014 
+ ******************************************
+ %NProc=8
+ Will use up to    8 processors via shared memory.
+ %mem=424000000
+ -----------------------
+ #CCSD(T)/6-31G* scf=xqc
+ -----------------------
+ 1/38=1/1;
+ 2/12=2,17=6,18=5,40=1/2;
+ 3/5=1,6=6,7=1,11=9,16=1,25=1,30=1/1,2,3;
+ 4//1;
+ 5/5=2,8=3,13=1,38=5/2,8;
+ 8/6=4,9=120000,10=2/1,4;
+ 9/5=7,14=2/13;
+ 6/7=2,8=2,9=2,10=2/1;
+ 99/5=1,9=1/99;
+ ----------------------------------------------------------------------
+ bec beryllium carbide triplet casno=57788940 state=1 config=1 method=1
+ 12 basis=1
+ ----------------------------------------------------------------------
+ Symbolic Z-matrix:
+ Charge =  1 Multiplicity = 2
+ BE                    0.        0.       -1.00329 
+ C                     0.        0.        0.66886 
+ 
+                          Input orientation:                          
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1          4           0        0.000000    0.000000   -1.003286
+      2          6           0        0.000000    0.000000    0.668857
+ ---------------------------------------------------------------------
+ Stoichiometry    CBe(1+,2)
+ Framework group  C*V[C*(BeC)]
+ Deg. of freedom     1
+ Full point group                 C*V     NOp   4
+ Largest Abelian subgroup         C2V     NOp   4
+ Largest concise Abelian subgroup C1      NOp   1
+                         Standard orientation:                         
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+      1          4           0        0.000000    0.000000   -1.003286
+      2          6           0        0.000000    0.000000    0.668857
+ ---------------------------------------------------------------------
+ Rotational constants (GHZ):      0.0000000     35.1180430     35.1180430
+ Standard basis: 6-31G(d) (6D, 7F)
+ There are    16 symmetry adapted cartesian basis functions of A1  symmetry.
+ There are     2 symmetry adapted cartesian basis functions of A2  symmetry.
+ There are     6 symmetry adapted cartesian basis functions of B1  symmetry.
+ There are     6 symmetry adapted cartesian basis functions of B2  symmetry.
+ There are    16 symmetry adapted basis functions of A1  symmetry.
+ There are     2 symmetry adapted basis functions of A2  symmetry.
+ There are     6 symmetry adapted basis functions of B1  symmetry.
+ There are     6 symmetry adapted basis functions of B2  symmetry.
+    30 basis functions,    56 primitive gaussians,    30 cartesian basis functions
+     5 alpha electrons        4 beta electrons
+       nuclear repulsion energy         7.5951955103 Hartrees.
+ NAtoms=    2 NActive=    2 NUniq=    2 SFac= 1.00D+00 NAtFMM=   60 NAOKFM=F Big=F
+ Integral buffers will be    131072 words long.
+ Raffenetti 2 integral format.
+ Two-electron integral symmetry is turned on.
+ One-electron integrals computed using PRISM.
+ NBasis=    30 RedAO= T EigKep=  2.65D-02  NBF=    16     2     6     6
+ NBsUse=    30 1.00D-06 EigRej= -1.00D+00 NBFU=    16     2     6     6
+ ExpMin= 8.23D-02 ExpMax= 3.05D+03 ExpMxC= 4.57D+02 IAcc=2 IRadAn=         4 AccDes= 0.00D+00
+ Harris functional with IExCor=  205 and IRadAn=       4 diagonalized for initial guess.
+ HarFok:  IExCor=  205 AccDes= 0.00D+00 IRadAn=         4 IDoV= 1 UseB2=F ITyADJ=14
+ ICtDFT=  3500011 ScaDFX=  1.000000  1.000000  1.000000  1.000000
+ FoFCou: FMM=F IPFlag=           0 FMFlag=      100000 FMFlg1=           0
+         NFxFlg=           0 DoJE=T BraDBF=F KetDBF=T FulRan=T
+         wScrn=  0.000000 ICntrl=     500 IOpCl=  0 I1Cent=   200000004 NGrid=           0
+         NMat0=    1 NMatS0=      1 NMatT0=    0 NMatD0=    1 NMtDS0=    0 NMtDT0=    0
+ Petite list used in FoFCou.
+ Initial guess orbital symmetries:
+ Alpha Orbitals:
+       Occupied  (SG) (SG) (SG) (SG) (PI)
+       Virtual   (PI) (SG) (PI) (PI) (SG) (PI) (PI) (SG) (SG) (SG)
+                 (PI) (PI) (DLTA) (DLTA) (PI) (PI) (SG) (SG) (DLTA)
+                 (DLTA) (PI) (PI) (SG) (SG) (SG)
+ Beta  Orbitals:
+       Occupied  (SG) (SG) (SG) (SG)
+       Virtual   (PI) (PI) (SG) (PI) (PI) (SG) (PI) (PI) (SG) (SG)
+                 (SG) (PI) (PI) (DLTA) (DLTA) (PI) (PI) (SG) (SG)
+                 (DLTA) (DLTA) (PI) (PI) (SG) (SG) (SG)
+ Initial guess <Sx>= 0.0000 <Sy>= 0.0000 <Sz>= 0.5000 <S**2>= 0.7500 S= 0.5000
+ Keep R1 and R2 ints in memory in symmetry-blocked form, NReq=946572.
+ Requested convergence on RMS density matrix=1.00D-08 within  64 cycles.
+ Requested convergence on MAX density matrix=1.00D-06.
+ Requested convergence on             energy=1.00D-06.
+ No special actions if energy rises.
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ Rare condition: small coef for last iteration:  0.000D+00
+ >>>>>>>>>> Convergence criterion not met.
+ SCF Done:  E(UHF) =  -51.9696612669     A.U. after   65 cycles
+            NFock= 64  Conv=0.94D-03     -V/T= 1.9976
+ <Sx>= 0.0000 <Sy>= 0.0000 <Sz>= 0.5000 <S**2>= 0.8575 S= 0.5524
+ <L.S>= 0.000000000000E+00
+ Annihilation of the first spin contaminant:
+ S**2 before annihilation     0.8575,   after     0.7510
+ Keep R1 and R2 ints in memory in symmetry-blocked form, NReq=946330.
+ LinEq1:  Iter=  0 NonCon=     1 RMS=1.42D-04 Max=1.48D-03 NDo=     1
+ AX will form     1 AO Fock derivatives at one time.
+ LinEq1:  Iter=  1 NonCon=     1 RMS=5.43D-05 Max=4.09D-04 NDo=     1
+ LinEq1:  Iter=  2 NonCon=     1 RMS=1.85D-05 Max=1.88D-04 NDo=     1
+ LinEq1:  Iter=  3 NonCon=     1 RMS=2.80D-06 Max=1.69D-05 NDo=     1
+ LinEq1:  Iter=  4 NonCon=     1 RMS=5.39D-07 Max=2.83D-06 NDo=     1
+ LinEq1:  Iter=  5 NonCon=     1 RMS=6.35D-08 Max=4.16D-07 NDo=     1
+ LinEq1:  Iter=  6 NonCon=     1 RMS=8.12D-09 Max=4.66D-08 NDo=     1
+ LinEq1:  Iter=  7 NonCon=     0 RMS=9.71D-10 Max=6.01D-09 NDo=     1
+ Linear equations converged to 1.513D-09 1.513D-08 after     7 iterations.
+ LinEq1:  Iter=  0 NonCon=     1 RMS=2.59D-04 Max=3.25D-03 NDo=     1
+ LinEq1:  Iter=  1 NonCon=     1 RMS=6.80D-05 Max=4.10D-04 NDo=     1
+ LinEq1:  Iter=  2 NonCon=     1 RMS=4.38D-05 Max=6.03D-04 NDo=     1
+ LinEq1:  Iter=  3 NonCon=     1 RMS=8.87D-06 Max=9.41D-05 NDo=     1
+ LinEq1:  Iter=  4 NonCon=     1 RMS=1.23D-06 Max=7.61D-06 NDo=     1
+ LinEq1:  Iter=  5 NonCon=     1 RMS=1.28D-07 Max=6.18D-07 NDo=     1
+ LinEq1:  Iter=  6 NonCon=     1 RMS=2.01D-08 Max=1.20D-07 NDo=     1
+ LinEq1:  Iter=  7 NonCon=     1 RMS=3.05D-09 Max=2.43D-08 NDo=     1
+ LinEq1:  Iter=  8 NonCon=     0 RMS=4.20D-10 Max=2.92D-09 NDo=     1
+ Linear equations converged to 1.513D-09 1.513D-08 after     8 iterations.
+ LinEq1:  Iter=  0 NonCon=     1 RMS=4.55D-04 Max=5.62D-03 NDo=     1
+ LinEq1:  Iter=  1 NonCon=     1 RMS=1.07D-04 Max=6.43D-04 NDo=     1
+ LinEq1:  Iter=  2 NonCon=     1 RMS=6.83D-05 Max=8.59D-04 NDo=     1
+ LinEq1:  Iter=  3 NonCon=     1 RMS=1.61D-05 Max=1.66D-04 NDo=     1
+ LinEq1:  Iter=  4 NonCon=     1 RMS=2.33D-06 Max=1.35D-05 NDo=     1
+ LinEq1:  Iter=  5 NonCon=     1 RMS=2.39D-07 Max=1.01D-06 NDo=     1
+ LinEq1:  Iter=  6 NonCon=     1 RMS=3.25D-08 Max=1.61D-07 NDo=     1
+ LinEq1:  Iter=  7 NonCon=     1 RMS=4.93D-09 Max=2.96D-08 NDo=     1
+ LinEq1:  Iter=  8 NonCon=     0 RMS=7.59D-10 Max=5.23D-09 NDo=     1
+ Linear equations converged to 1.513D-09 1.513D-08 after     8 iterations.
+ Incorrect curvature in search direction -- initial direction reversed.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Minimum is close to point  5 DX=  8.43D-02 DF= -5.24D-07 DXR=  3.39D-02 DFR=  1.15D-03 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  2 and  3.
+     Minimum is close to point  3 DX= -1.54D-01 DF= -1.48D-06 DXR=  9.97D-02 DFR=  7.94D-03 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+     Minimum is close to point  2 DX= -5.46D-02 DF= -6.79D-07 DXR=  3.32D-02 DFR=  2.45D-03 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+     Minimum is close to point  2 DX= -5.01D-02 DF= -7.44D-07 DXR=  3.23D-02 DFR=  2.13D-03 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+     Minimum is close to point  2 DX= -8.08D-03 DF= -2.56D-08 DXR=  5.07D-03 DFR=  5.97D-05 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Minimum is close to point  2 DX=  9.61D-02 DF= -1.71D-06 DXR=  5.67D-02 DFR=  3.22D-03 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+     Minimum is close to point  2 DX= -9.90D-02 DF= -5.83D-06 DXR=  5.82D-02 DFR=  7.50D-03 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+     Minimum is close to point  2 DX= -5.32D-02 DF= -2.62D-06 DXR=  3.44D-02 DFR=  2.39D-03 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+     Minimum is close to point  2 DX= -9.04D-03 DF= -8.90D-08 DXR=  5.68D-03 DFR=  7.45D-05 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Minimum is close to point  2 DX=  9.35D-02 DF= -3.76D-06 DXR=  5.52D-02 DFR=  3.06D-03 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+     Minimum is close to point  2 DX= -8.87D-02 DF= -6.28D-06 DXR=  5.18D-02 DFR=  6.04D-03 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+     Minimum is close to point  2 DX= -7.15D-02 DF= -2.93D-06 DXR=  4.68D-02 DFR=  4.25D-03 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Accept linear search using points  1 and  2.
+     Minimum is close to point  2 DX= -4.64D-02 DF= -9.05D-07 DXR=  2.99D-02 DFR=  1.82D-03 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+     Minimum is close to point  2 DX=  2.53D-02 DF= -9.12D-08 DXR=  1.66D-02 DFR=  2.74D-04 which will be used.
+ Gradient too large for Newton-Raphson -- use scaled steepest descent instead.
+ LinEq1:  Iter=  0 NonCon=     1 RMS=9.21D-04 Max=1.31D-02 NDo=     1
+ LinEq1:  Iter=  1 NonCon=     1 RMS=2.96D-04 Max=1.88D-03 NDo=     1
+ LinEq1:  Iter=  2 NonCon=     1 RMS=1.01D-05 Max=6.32D-05 NDo=     1
+ LinEq1:  Iter=  3 NonCon=     1 RMS=1.96D-06 Max=1.16D-05 NDo=     1
+ LinEq1:  Iter=  4 NonCon=     1 RMS=2.92D-07 Max=2.73D-06 NDo=     1
+ LinEq1:  Iter=  5 NonCon=     1 RMS=4.54D-08 Max=3.27D-07 NDo=     1
+ LinEq1:  Iter=  6 NonCon=     1 RMS=5.42D-09 Max=3.15D-08 NDo=     1
+ LinEq1:  Iter=  7 NonCon=     0 RMS=7.63D-10 Max=5.08D-09 NDo=     1
+ Linear equations converged to 1.513D-09 1.513D-08 after     7 iterations.
+     Accept linear search using points  1 and  2.
+     Minimum is close to point  2 DX= -8.27D-02 DF= -2.70D-06 DXR=  9.02D-02 DFR=  8.70D-03 which will be used.
+ LinEq1:  Iter=  0 NonCon=     1 RMS=8.52D-05 Max=8.98D-04 NDo=     1
+ LinEq1:  Iter=  1 NonCon=     1 RMS=3.17D-05 Max=3.28D-04 NDo=     1
+ LinEq1:  Iter=  2 NonCon=     1 RMS=5.35D-06 Max=3.86D-05 NDo=     1
+ LinEq1:  Iter=  3 NonCon=     1 RMS=9.96D-07 Max=8.50D-06 NDo=     1
+ LinEq1:  Iter=  4 NonCon=     1 RMS=1.48D-07 Max=1.20D-06 NDo=     1
+ LinEq1:  Iter=  5 NonCon=     1 RMS=1.53D-08 Max=1.38D-07 NDo=     1
+ LinEq1:  Iter=  6 NonCon=     1 RMS=2.14D-09 Max=1.03D-08 NDo=     1
+ LinEq1:  Iter=  7 NonCon=     0 RMS=2.45D-10 Max=1.53D-09 NDo=     1
+ Linear equations converged to 1.513D-09 1.513D-08 after     7 iterations.
+     Minimum is close to point  2 DX=  1.71D-02 DF= -1.08D-09 DXR=  1.68D-02 DFR=  2.82D-04 which will be used.
+ LinEq1:  Iter=  0 NonCon=     1 RMS=1.11D-06 Max=1.41D-05 NDo=     1
+ LinEq1:  Iter=  1 NonCon=     1 RMS=2.51D-07 Max=1.91D-06 NDo=     1
+ LinEq1:  Iter=  2 NonCon=     1 RMS=5.01D-08 Max=3.41D-07 NDo=     1
+ LinEq1:  Iter=  3 NonCon=     1 RMS=1.10D-08 Max=8.47D-08 NDo=     1
+ LinEq1:  Iter=  4 NonCon=     1 RMS=1.62D-09 Max=1.38D-08 NDo=     1
+ LinEq1:  Iter=  5 NonCon=     1 RMS=1.78D-10 Max=1.89D-09 NDo=     1
+ LinEq1:  Iter=  6 NonCon=     0 RMS=2.15D-11 Max=1.09D-10 NDo=     1
+ Linear equations converged to 1.010D-10 1.010D-09 after     6 iterations.
+ SCF Done:  E(UHF) =  -51.9840874768     a.u. after   28 cycles
+            Convg  =    0.4438D-07                    96 Fock formations.
+              S**2 =  1.5594                  -V/T =  1.9961
+ <Sx>= 0.0000 <Sy>= 0.0000 <Sz>= 0.5000 <S**2>= 1.5594 S= 0.8451
+ <L.S>= 0.000000000000E+00
+ Annihilation of the first spin contaminant:
+ S**2 before annihilation     1.5594,   after     0.7583
+ ExpMin= 8.23D-02 ExpMax= 3.05D+03 ExpMxC= 4.57D+02 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
+ HarFok:  IExCor=  205 AccDes= 0.00D+00 IRadAn=         5 IDoV=-2 UseB2=F ITyADJ=14
+ ICtDFT= 12500011 ScaDFX=  1.000000  1.000000  1.000000  1.000000
+ Range of M.O.s used for correlation:     3    30
+ NBasis=    30 NAE=     5 NBE=     4 NFC=     2 NFV=     0
+ NROrb=     28 NOA=     3 NOB=     2 NVA=    25 NVB=    26
+ Semi-Direct transformation.
+ ModeAB=           2 MOrb=             3 LenV=     423823991
+ LASXX=         7874 LTotXX=        7874 LenRXX=        7874
+ LTotAB=        9238 MaxLAS=       39060 LenRXY=       39060
+ NonZer=       43596 LenScr=      785920 LnRSAI=           0
+ LnScr1=           0 LExtra=           0 Total=       832854
+ MaxDsk=          -1 SrtSym=           F ITran=            4
+ JobTyp=1 Pass  1:  I=   1 to   3.
+ (rs|ai) integrals will be sorted in core.
+ ModeAB=           2 MOrb=             2 LenV=     423823991
+ LASXX=         5586 LTotXX=        5586 LenRXX=       26040
+ LTotAB=        5223 MaxLAS=       26040 LenRXY=        5223
+ NonZer=       29064 LenScr=      785920 LnRSAI=           0
+ LnScr1=           0 LExtra=           0 Total=       817183
+ MaxDsk=          -1 SrtSym=           F ITran=            4
+ JobTyp=2 Pass  1:  I=   1 to   2.
+ (rs|ai) integrals will be sorted in core.
+ Spin components of T(2) and E(2):
+     alpha-alpha T2 =       0.3217018251D-02 E2=     -0.9793926968D-02
+     alpha-beta  T2 =       0.2154311380D-01 E2=     -0.5210849563D-01
+     beta-beta   T2 =       0.1375553225D-02 E2=     -0.2324677345D-02
+ ANorm=    0.1012983556D+01
+ E2 =    -0.6422709995D-01 EUMP2 =    -0.52048314576769D+02
+ (S**2,0)=  0.15594D+01           (S**2,1)=  0.15334D+01
+ E(PUHF)=      -0.51992343389D+02        E(PMP2)=      -0.52056438610D+02
+ Keep R2 and R3 ints in memory in symmetry-blocked form, NReq=931595.
+ Iterations=  50 Convergence= 0.100D-06
+ Iteration Nr.   1
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ E(PMP3)=      -0.52071818798D+02
+ MP4(R+Q)=  0.12014937D-02
+ E3=       -0.15714056D-01        EUMP3=      -0.52064028633D+02
+ E4(DQ)=   -0.39890085D-02        UMP4(DQ)=   -0.52068017641D+02
+ E4(SDQ)=  -0.54491885D-02        UMP4(SDQ)=  -0.52069477821D+02
+ DE(Corr)= -0.78769448E-01 E(Corr)=     -52.062856924    
+ NORM(A)=   0.10265158D+01
+ Iteration Nr.   2
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.85984316E-01 E(CORR)=     -52.070071792     Delta=-7.21D-03
+ NORM(A)=   0.10511531D+01
+ Iteration Nr.   3
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.91905315E-01 E(CORR)=     -52.075992792     Delta=-5.92D-03
+ NORM(A)=   0.11453356D+01
+ Iteration Nr.   4
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10173139     E(CORR)=     -52.085818870     Delta=-9.83D-03
+ NORM(A)=   0.12052097D+01
+ Iteration Nr.   5
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10478861     E(CORR)=     -52.088876082     Delta=-3.06D-03
+ NORM(A)=   0.12378521D+01
+ Iteration Nr.   6
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10661550     E(CORR)=     -52.090702975     Delta=-1.83D-03
+ NORM(A)=   0.12254330D+01
+ Iteration Nr.   7
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10576592     E(CORR)=     -52.089853396     Delta= 8.50D-04
+ NORM(A)=   0.12647242D+01
+ Iteration Nr.   8
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10823790     E(CORR)=     -52.092325381     Delta=-2.47D-03
+ NORM(A)=   0.12466909D+01
+ Iteration Nr.   9
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10708100     E(CORR)=     -52.091168477     Delta= 1.16D-03
+ NORM(A)=   0.12533653D+01
+ Iteration Nr.  10
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10744057     E(CORR)=     -52.091528051     Delta=-3.60D-04
+ NORM(A)=   0.12501085D+01
+ Iteration Nr.  11
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10722537     E(CORR)=     -52.091312849     Delta= 2.15D-04
+ NORM(A)=   0.12509156D+01
+ Iteration Nr.  12
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10725954     E(CORR)=     -52.091347018     Delta=-3.42D-05
+ NORM(A)=   0.12505394D+01
+ Iteration Nr.  13
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10723462     E(CORR)=     -52.091322097     Delta= 2.49D-05
+ NORM(A)=   0.12504877D+01
+ Iteration Nr.  14
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10722432     E(CORR)=     -52.091311792     Delta= 1.03D-05
+ NORM(A)=   0.12504357D+01
+ Iteration Nr.  15
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10722055     E(CORR)=     -52.091308024     Delta= 3.77D-06
+ NORM(A)=   0.12503846D+01
+ Iteration Nr.  16
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10721772     E(CORR)=     -52.091305199     Delta= 2.83D-06
+ NORM(A)=   0.12504286D+01
+ Iteration Nr.  17
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10722149     E(CORR)=     -52.091308968     Delta=-3.77D-06
+ NORM(A)=   0.12504518D+01
+ Iteration Nr.  18
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10722280     E(CORR)=     -52.091310273     Delta=-1.30D-06
+ NORM(A)=   0.12504723D+01
+ Iteration Nr.  19
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10722401     E(CORR)=     -52.091311482     Delta=-1.21D-06
+ NORM(A)=   0.12504765D+01
+ Iteration Nr.  20
+ **********************
+ DD1Dir will call FoFMem   1 times, MxPair=        16
+ NAB=     6 NAA=     3 NBB=     1.
+ DE(Corr)= -0.10722410     E(CORR)=     -52.091311582     Delta=-9.95D-08
+ NORM(A)=   0.12504800D+01
+ Dominant configurations:
+ ***********************
+ Spin Case        I    J    A    B          Value
+    AA            4         7           -0.152699D+00
+    AA            5         8            0.101575D+00
+    BB            4         6           -0.585892D+00
+   ABAB           4    4    7    6       0.206761D+00
+   ABAB           4    4    6    5       0.139383D+00
+   ABAB           5    4    8    6      -0.145709D+00
+ Largest amplitude= 5.86D-01
+ Time for triples=        1.38 seconds.
+ T4(CCSD)= -0.68779261D-02
+ T5(CCSD)=  0.14598750D-02
+ CCSD(T)= -0.52096729633D+02
+
+ S**2, projected HF & approx projected MPn energies after annihilation of
+ unwanted spin states (see manual for definitions):
+
+ spins       (S**2,0) (S**2,1)    PUHF        PMP2        PMP3        PMP4
+ annihilated
+ s+1         0.74499  0.75044  -51.992343  -52.056439  -52.071819
+ s+1,s+2     0.75000  0.75000  -51.991414  -52.055530  -52.070949
+
+ Discarding MO integrals.
+
+ **********************************************************************
+
+            Population analysis using the SCF density.
+
+ **********************************************************************
+
+ Orbital symmetries:
+ Alpha Orbitals:
+       Occupied  (SG) (SG) (SG) (SG) (?A)
+       Virtual   (?A) (SG) (?A) (?A) (SG) (PI) (PI) (SG) (SG) (SG)
+                 (?A) (?A) (?B) (?B) (?B) (PI) (PI) (SG) (DLTA)
+                 (DLTA) (PI) (PI) (SG) (SG) (SG)
+ Beta  Orbitals:
+       Occupied  (SG) (SG) (SG) (SG)
+       Virtual   (?A) (SG) (?A) (?A) (?A) (SG) (PI) (SG) (PI) (SG)
+                 (SG) (PI) (PI) (DLTA) (DLTA) (PI) (PI) (SG) (SG)
+                 (?B) (?B) (PI) (PI) (?B) (SG) (SG)
+ Unable to determine electronic state:  an orbital has unidentified symmetry.
+ Alpha  occ. eigenvalues --  -11.69113  -5.02062  -1.19895  -0.83132  -0.77661
+ Alpha virt. eigenvalues --   -0.29446  -0.17785  -0.10087  -0.07530   0.00546
+ Alpha virt. eigenvalues --    0.19749   0.19911   0.24593   0.32667   0.41420
+ Alpha virt. eigenvalues --    0.46540   0.53086   0.77297   0.77298   0.78957
+ Alpha virt. eigenvalues --    0.78992   0.79919   1.15567   1.60425   1.60545
+ Alpha virt. eigenvalues --    1.81233   1.83067   2.19167   2.58963   4.01796
+  Beta  occ. eigenvalues --  -11.64791  -5.04434  -0.99923  -0.56843
+  Beta virt. eigenvalues --   -0.27257  -0.23589  -0.23535  -0.10145  -0.06954
+  Beta virt. eigenvalues --   -0.00175   0.18241   0.18516   0.18926   0.36969
+  Beta virt. eigenvalues --    0.52159   0.55565   0.60385   0.74800   0.74804
+  Beta virt. eigenvalues --    0.78971   0.80540   0.84060   1.17739   1.70918
+  Beta virt. eigenvalues --    1.70958   1.90155   1.95129   2.28861   2.56461
+  Beta virt. eigenvalues --    4.07831
+          Condensed to atoms (all electrons):
+               1          2
+     1  Be   3.155172   0.233637
+     2  C    0.233637   5.377555
+          Atomic-Atomic Spin Densities.
+               1          2
+     1  Be  -0.861914   0.126766
+     2  C    0.126766   1.608383
+ Mulliken charges and spin densities:
+               1          2
+     1  Be   0.611191  -0.735148
+     2  C    0.388809   1.735148
+ Sum of Mulliken charges =   1.00000   1.00000
+ Mulliken charges and spin densities with hydrogens summed into heavy atoms:
+               1          2
+     1  Be   0.611191  -0.735148
+     2  C    0.388809   1.735148
+ Electronic spatial extent (au):  <R**2>=             40.7416
+ Charge=              1.0000 electrons
+ Dipole moment (field-independent basis, Debye):
+    X=              0.0000    Y=              0.0000    Z=             -1.1152  Tot=              1.1152
+ Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=             -7.1608   YY=             -8.8903   ZZ=             -6.5157
+   XY=              0.0000   XZ=              0.0000   YZ=              0.0000
+ Traceless Quadrupole moment (field-independent basis, Debye-Ang):
+   XX=              0.3615   YY=             -1.3680   ZZ=              1.0066
+   XY=              0.0000   XZ=              0.0000   YZ=              0.0000
+ Octapole moment (field-independent basis, Debye-Ang**2):
+  XXX=              0.0000  YYY=              0.0000  ZZZ=              4.1469  XYY=              0.0000
+  XXY=              0.0000  XXZ=              1.6152  XZZ=              0.0000  YZZ=              0.0000
+  YYZ=              0.5971  XYZ=              0.0000
+ Hexadecapole moment (field-independent basis, Debye-Ang**3):
+ XXXX=             -8.3988 YYYY=            -11.1238 ZZZZ=            -58.8079 XXXY=              0.0000
+ XXXZ=              0.0000 YYYX=              0.0000 YYYZ=              0.0000 ZZZX=              0.0000
+ ZZZY=              0.0000 XXYY=             -3.2536 XXZZ=            -10.0008 YYZZ=            -11.1399
+ XXYZ=              0.0000 YYXZ=              0.0000 ZZXY=              0.0000
+ N-N= 7.595195510288D+00 E-N=-1.335685371975D+02  KE= 5.218851364627D+01
+ Symmetry A1   KE= 5.087435914252D+01
+ Symmetry A2   KE= 3.782067739218D-33
+ Symmetry B1   KE= 5.240997109797D-32
+ Symmetry B2   KE= 1.314154503743D+00
+ 1\1\GINC-N358\SP\UCCSD(T)-FC\6-31G(d)\C1Be1(1+,2)\RDJ3\13-May-2014\0\\
+ #CCSD(T)/6-31G* scf=xqc\\bec beryllium carbide triplet casno=57788940 
+ state=1 config=1 method=112 basis=1\\1,2\Be,0,0.,0.,-1.003286\C,0,0.,0
+ .,0.668857\\Version=EM64L-G09RevD.01\HF=-51.9840875\MP2=-52.0483146\MP
+ 3=-52.0640286\MP4D=-52.0692191\MP4DQ=-52.0680176\PUHF=-51.9923434\PMP2
+ -0=-52.0564386\PMP3-0=-52.0718188\MP4SDQ=-52.0694778\CCSD=-52.0913116\
+ CCSD(T)=-52.0967296\S2=1.559392\S2-1=1.533374\S2A=0.758334\RMSD=9.382e
+ -04\PG=C*V [C*(Be1C1)]\\@
+
+
+ IF YOU DON'T HAVE THE LAW - ARGUE THE FACTS.
+ IF YOU DON'T HAVE THE FACTS - ARGUE THE LAW.
+ IF YOU DON'T HAVE EITHER - POUND THE TABLE.
+ Job cpu time:       0 days  0 hours  0 minutes 44.2 seconds.
+ File lengths (MBytes):  RWF=     13 Int=      0 D2E=      0 Chk=      1 Scr=      1
+ Normal termination of Gaussian 09 at Tue May 13 14:34:42 2014.

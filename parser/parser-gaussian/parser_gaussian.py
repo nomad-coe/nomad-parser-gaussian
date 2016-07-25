@@ -2,6 +2,7 @@ from __future__ import division
 from builtins import str
 from builtins import range
 from builtins import object
+from functools import reduce
 import setup_paths
 from nomadcore.simple_parser import mainFunction, SimpleMatcher as SM
 from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
@@ -64,7 +65,7 @@ mainFileDescription = SM(
                        SM(r"\s*(?P<x_gaussian_settings>([a-zA-Z0-9-/=(),#*+:]*\s*)+)")
                        ]
              ),
-               SM(name = 'charge_multiplicity_cell',
+               SM(name = 'charge_multiplicity_cell_masses',
                sections = ['section_system'],
 		  startReStr = r"\s*Charge =",
                   endReStr = r"\s*Leave Link  101\s*",
@@ -320,7 +321,7 @@ mainFileDescription = SM(
                 subMatchers = [
                       SM(r"\s*Temperature\s*(?P<x_gaussian_temperature>[0-9.]+)\s*Kelvin.\s*Pressure\s*(?P<x_gaussian_pressure__atmosphere>[0-9.]+)\s*Atm."),
                       SM(r"\s*Principal axes and moments of inertia in atomic units:"),
-                      SM(r"\s*Eigenvalues --\s*(?P<x_gaussian_moment_of_inertia_X__amu_angstrom_angstrom>[0-9.]+)\s*(?P<x_gaussian_moment_of_inertia_Y__amu_angstrom_angstrom>[0-9.]+)\s*(?P<x_gaussian_moment_of_inertia_Z__amu_angstrom_angstrom>[0-9.]+)"),
+                      SM(r"\s*Eigenvalues --\s*(?P<x_gaussian_moment_of_inertia_X__amu_angstrom_angstrom>(\d+\.\d{5}))\s*?(?P<x_gaussian_moment_of_inertia_Y__amu_angstrom_angstrom>(\d+\.\d{5}))\s*?(?P<x_gaussian_moment_of_inertia_Z__amu_angstrom_angstrom>(\d+\.\d{5}))"),
                       SM(r"\s*Zero-point correction=\s*(?P<x_gaussian_zero_point_energy__hartree>[0-9.]+)"),
                       SM(r"\s*Thermal correction to Energy=\s*(?P<x_gaussian_thermal_correction_energy__hartree>[0-9.]+)"),
                       SM(r"\s*Thermal correction to Enthalpy=\s*(?P<x_gaussian_thermal_correction_enthalpy__hartree>[0-9.]+)"),
@@ -472,6 +473,7 @@ class GaussianParserContext(object):
         gIndexTmp = backend.openSection("section_system")
         backend.addArrayValues("atom_labels", atomic_symbols)
         backend.addArrayValues("atom_positions", atom_coords)
+        backend.addValue("x_gaussian_number_of_atoms",len(atomic_symbols))
         backend.closeSection("section_system", gIndexTmp)
 
       def onClose_x_gaussian_section_atom_forces(self, backend, gIndex, section):
@@ -525,7 +527,7 @@ class GaussianParserContext(object):
       def onClose_x_gaussian_section_eigenvalues(self, backend, gIndex, section):
           eigenenergies = str(section["x_gaussian_alpha_occ_eigenvalues_values"])
           eigenen1 = []
-          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").split()]
+          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
           eigenen1 = np.append(eigenen1, energy)
           if(section["x_gaussian_beta_occ_eigenvalues_values"]):
              occoccupationsalp = np.ones(len(eigenen1), dtype=float)
@@ -534,7 +536,7 @@ class GaussianParserContext(object):
 
           eigenenergies = str(section["x_gaussian_alpha_vir_eigenvalues_values"])
           eigenen2 = []
-          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").split()]
+          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
           eigenen2 = np.append(eigenen2, energy)
           viroccupationsalp = np.zeros(len(eigenen2), dtype=float)
           eigenencon = np.zeros(len(eigenen1) + len(eigenen2))
@@ -547,12 +549,12 @@ class GaussianParserContext(object):
           if(section["x_gaussian_beta_occ_eigenvalues_values"]):
              eigenenergies = str(section["x_gaussian_beta_occ_eigenvalues_values"])
              eigenen1 = []
-             energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").split()]
+             energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
              eigenen1 = np.append(eigenen1, energy)
              occoccupationsbet = np.ones(len(eigenen1), dtype=float)
              eigenenergies = str(section["x_gaussian_beta_vir_eigenvalues_values"])
              eigenen2 = []
-             energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").split()]
+             energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
              eigenen2 = np.append(eigenen2, energy)
              viroccupationsbet = np.zeros(len(eigenen2), dtype=float)
              eigenencon = np.zeros(len(eigenen1) + len(eigenen2))
@@ -837,10 +839,10 @@ class GaussianParserContext(object):
               'B971':        [{'name': 'HYB_GGA_XC_B971'}],
               'B972':        [{'name': 'HYB_GGA_XC_B972'}],
               'O3LYP':       [{'name': 'HYB_GGA_XC_O3LYP'}], 
-              'TPSSh':       [{'name': 'HYB_GGA_XC_TPSSh'}],
+              'TPSSH':       [{'name': 'HYB_GGA_XC_TPSSh'}],
               'BMK':         [{'name': 'HYB_GGA_XC_BMK'}],
               'X3LYP':       [{'name': 'HYB_GGA_XC_X3LYP'}],
-              'tHCTHhyb':    [{'name': 'HYB_GGA_XC_tHCTHHYB'}],
+              'THCTHHYB':    [{'name': 'HYB_GGA_XC_tHCTHHYB'}],
               'BHANDH':      [{'name': 'HYB_GGA_XC_BHANDH'}],
               'BHANDHLYP':   [{'name': 'HYB_GGA_XC_BHANDHLYP'}],
               'APF':         [{'name': 'HYB_GGA_XC_APF'}],
@@ -897,6 +899,7 @@ class GaussianParserContext(object):
               'HUCKEL':    [{'name': 'HUCKEL'}],
               'EXTENDEDHUCKEL':    [{'name': 'HUCKEL'}],
               'ONIOM':     [{'name': 'ONIOM'}],
+              'HF':        [{'name': 'HF'}],
               'RHF':       [{'name': 'RHF'}],
               'UHF':       [{'name': 'UHF'}],
               'ROHF':      [{'name': 'ROHF'}],
@@ -1045,22 +1048,28 @@ class GaussianParserContext(object):
                      elif method2[0:2] == 'RO':
                         methodprefix = method2[0:2]
                         method2 = method2[2:]
-                  if method2[0] == 'S' or method2[0] == 'B' or method2[0] == 'O':
+                  if method2[0:2] == 'SV' or method2[0] == 'B' or method2[0] == 'O':
                      if method2[1] != '2' and method2[1] != '3':
-                        exc = method2[0]
-                        corr = method2[1:]
-                        if exc in xcDict.keys() and corr in xcDict.keys():
-                           xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                       if method2[0] in xcDict.keys() and method2[1:] in xcDict.keys():
+                         exc = method2[0]
+                         corr = method2[1:]
+                         excfunc = xcDict[exc][0]['name']
+                         corrfunc = xcDict[corr][0]['name']
+                         xc = str(excfunc) + "_" + str(corrfunc)
                   if method2[0:3] == 'BRX' or method2[0:3] == 'G96':
-                     exc = method2[0:3]
-                     corr = method2[3:]
-                  if exc in xcDict.keys() and corr in xcDict.keys():
-                      xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                    exc = method2[0:3]
+                    corr = method2[3:]
+                    if exc in xcDict.keys() and corr in xcDict.keys():
+                      excfunc = xcDict[exc][0]['name']
+                      corrfunc = xcDict[corr][0]['name']
+                      xc = str(excfunc) + "_" + str(corrfunc)
                   if method2[0:5] == 'WPBEH':
-                     exc = method2[0:5]
-                     corr = method2[6:]
-                     if exc in xcDict.keys() and corr in xcDict.keys():
-                        xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                    exc = method2[0:5]
+                    corr = method2[6:]
+                    if exc in xcDict.keys() and corr in xcDict.keys():
+                      excfunc = xcDict[exc][0]['name']
+                      corrfunc = xcDict[corr][0]['name']
+                      xc = str(excfunc) + "_" + str(corrfunc)
                   if method2[0:3] == 'LC-':
                      exccorr = method2[3:]
                      if exccorr in xcDict.keys():
@@ -1068,7 +1077,7 @@ class GaussianParserContext(object):
                   if method2 in xcDict.keys():
                      xc = method2
                      xcWrite= True
-                     methodWrite = True
+                     methodWrite = True 
                      method = 'DFT'
                   if method2 in methodDict.keys():
                      method = method2
@@ -1077,17 +1086,18 @@ class GaussianParserContext(object):
                   else:
                      for n in range(2,9):
                         if method2[0:n] in methodDict.keys():
-                          if method2[0:n] in xcDict.keys():
-                            method = 'DFT'
-                            methodWrite = True
-                          else:
-                            method = method2[0:n]
-                            methodWrite = True
-                            methodreal = method2
-                          if method2[0:9] == 'CBSEXTRAP':
-                            method = method2[0:9]
-                            methodWrite = True
-                            methodreal = method2
+                          method = method2[0:n]
+                          methodWrite = True
+                          methodreal = method2
+                        if method2[0:n] in xcDict.keys():
+                          xc = method2[0:n]
+                          xcWrite = True
+                          methodWrite = True
+                          method = 'DFT'
+                        if method2[0:9] == 'CBSEXTRAP':
+                          method = method2[0:9]
+                          methodWrite = True
+                          methodreal = method2
                rest = settings.split('/')[1].replace("'","").replace("]","")
                rest = rest.upper() 
                for x in rest.split():
@@ -1156,21 +1166,27 @@ class GaussianParserContext(object):
                     elif method2[0:2] == 'RO':
                       methodprefix = method2[0:2] 
                       method2 = method2[2:]
-                  if method2[0] == 'S' or method2[0] == 'B' or method2[0] == 'O':
-                   if method2[0] in xcDict.keys() and method2[1:] in xcDict.keys():
+                  if method2[0:2] == 'SV' or method2[0] == 'B' or method2[0] == 'O':
+                    if method2[0] in xcDict.keys() and method2[1:] in xcDict.keys():
                       exc = method2[0]
                       corr = method2[1:]
-                      xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                      excfunc = [v for k, v in xcDict.items() if k[0] == exc]
+                      corrfunc = [v for k, v in xcDict.items() if k[0] == corr]
+                      xc = excfunc + corrfunc
                   if method2[0:3] == 'BRX' or method2[0:3] == 'G96':
-                   exc = method2[0:3]
-                   corr = method2[3:]
-                   if exc in xcDict.keys() and corr in xcDict.keys():
-                      xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                    exc = method2[0:3]
+                    corr = method2[3:]
+                    if exc in xcDict.keys() and corr in xcDict.keys():
+                      excfunc = xcDict[exc][0]['name']
+                      corrfunc = xcDict[corr][0]['name']
+                      xc = str(excfunc) + "_" + str(corrfunc)
                   if method2[0:5] == 'WPBEH':
                    exc = method2[0:5]
                    corr = method2[6:]
                    if exc in xcDict.keys() and corr in xcDict.keys():
-                      xc = xcDict.get([exc][-1]) + xcDict.get([corr][-1])
+                      excfunc = xcDict[exc][0]['name']
+                      corrfunc = xcDict[corr][0]['name']
+                      xc = str(excfunc) + "_" + str(corrfunc)
                   if method2[0:3] == 'LC-':
                    exccorr = method2[3:]
                    if exccorr in xcDict.keys():
@@ -1375,7 +1391,6 @@ class GaussianParserContext(object):
                atmass = np.append(atmass, mass)
                numberofatoms = len(atmass)
                backend.addArrayValues("x_gaussian_masses", atmass)
-               backend.addValue("x_gaussian_number_of_atoms",numberofatoms)
 
 # which values to cache or forward (mapping meta name -> CachingLevel)
 
@@ -1388,6 +1403,7 @@ cachingLevelForMetaName = {
         "x_gaussian_atom_x_force": CachingLevel.Cache,
         "x_gaussian_atom_y_force": CachingLevel.Cache,
         "x_gaussian_atom_z_force": CachingLevel.Cache,
+        "x_gaussian_number_of_atoms": CachingLevel.ForwardAndCache,
         "x_gaussian_section_frequencies": CachingLevel.Forward,
         "x_gaussian_frequency_values": CachingLevel.Cache,
         "x_gaussian_frequencies": CachingLevel.ForwardAndCache,
@@ -1454,16 +1470,15 @@ cachingLevelForMetaName = {
         "x_gaussian_single_configuration_calculation_converged": CachingLevel.ForwardAndCache,
         "x_gaussian_geometry_optimization_converged": CachingLevel.ForwardAndCache,
         "section_method": CachingLevel.Forward,
-        "x_gaussian_section_elstruc_method": CachingLevel.Cache,
+        "x_gaussian_section_elstruc_method": CachingLevel.ForwardAndCache,
         "x_gaussian_elstruc_method_name": CachingLevel.ForwardAndCache,
         "XC_functional_name": CachingLevel.ForwardAndCache, 
         "basis_set_atom_centered_short_name": CachingLevel.ForwardAndCache,
         "x_gaussian_settings": CachingLevel.Cache,
         "x_gaussian_settings_corrected": CachingLevel.ForwardAndCache,
         "section_system": CachingLevel.Forward,
-        "x_gaussian_atomic_masses": CachingLevel.Cache,
+        "x_gaussian_atomic_masses": CachingLevel.ForwardAndCache,
         "x_gaussian_masses": CachingLevel.ForwardAndCache,
-        "x_gaussian_number_of_atoms": CachingLevel.ForwardAndCache
 }
 
 if __name__ == "__main__":
