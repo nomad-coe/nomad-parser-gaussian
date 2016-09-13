@@ -61,7 +61,7 @@ mainFileDescription = SM(
                    forwardMatch = True,
                    subMatchers = [
                        SM(r"\s*(?P<x_gaussian_settings>([a-zA-Z0-9-/=(),#*+:]*\s*)+)"),
-                       SM(r"\s*(?P<x_gaussian_settings>([a-zA-Z0-9-/=(),#*+:]*\s*)+)")
+                       SM(r"\s*(?P<x_gaussian_settings>([a-zA-Z0-9-/=(),#*+:]*\s*)+)"),
                        ]
              ),
                SM(name = 'charge_multiplicity_cell_masses',
@@ -96,20 +96,30 @@ mainFileDescription = SM(
                       SM(r"\s*Rotational constants")
                     ]
                 ),
+                    SM(name = 'SectionHybridCoeffs',
+                    sections = ['x_gaussian_section_hybrid_coeffs'],
+                    startReStr = r"\s*IExCor=",
+                    forwardMatch = True,
+                    subMatchers = [
+                     SM(r"\s*IExCor=\s*[0-9]+\s*DFT=[A-Z]\s*Ex\+Corr=[A-Z0-9]+\s*ExCW=[0-9]\s*ScaHFX=\s*(?P<hybrid_xc_coeff1>[0-9.]+)"),
+                     SM(r"\s*IExCor=\s*[0-9]+\s*DFT=[A-Z]\s*Ex\=[A-Z0-9]+\s*Corr=[a-zA-Z0-9]+\s*ExCW=[0-9]\s*ScaHFX=\s*(?P<hybrid_xc_coeff1>[0-9.]+)"),
+                     SM(r"\s*ScaDFX=\s*(?P<hybrid_xc_coeff2>[0-9.]+\s*[0-9.]+\s*[0-9.]+\s*[0-9.]+)")
+                    ]
+                ),
                     SM(name = 'TotalEnergyScfGaussian',
                     sections  = ['section_scf_iteration'],
-                    startReStr = r"\s*Cycle\s+[0-9]+|\s*Initial guess <Sx>=",
-                    forwardMatch = True,
+                    startReStr = r"\s*Requested convergence on RMS",
+                    forwardMatch = False,
                     repeats = True,
                     subMatchers = [
-                    SM(r"\s*Cycle\s+[0-9]+|\s*Initial guess <Sx>="),
-                    SM(r"\s*E=\s*(?P<energy_total_scf_iteration__hartree>[-+0-9.]+)\s*Delta-E=\s*(?P<x_gaussian_delta_energy_total_scf_iteration__hartree>[-+0-9.]+)"),
-                    SM(r"\s*(?P<x_gaussian_single_configuration_calculation_converged>SCF Done):\s*[(),A-Za-z0-9-]+\s*=\s*(?P<x_gaussian_energy_total__hartree>[-+0-9.]+)"),
+                     SM(r"\s*Cycle\s+[0-9]+|\s*Initial guess <Sx>="),
+                     SM(r"\s*E=\s*(?P<energy_total_scf_iteration__hartree>[-+0-9.]+)\s*Delta-E=\s*(?P<x_gaussian_delta_energy_total_scf_iteration__hartree>[-+0-9.]+)"),
+                     SM(r"\s*(?P<x_gaussian_single_configuration_calculation_converged>SCF Done):\s*E\((?P<x_gaussian_hf_detect>[A-Z0-9]+)\)\s*=\s*(?P<x_gaussian_energy_scf__hartree>[-+0-9.]+)"),
                      SM(r"\s*NFock=\s*[0-9]+\s*Conv=(?P<x_gaussian_energy_error__hartree>[-+0-9EeDd.]+)\s*"),
                      SM(r"\s*KE=\s*(?P<x_gaussian_electronic_kinetic_energy__hartree>[-+0-9EeDd.]+)\s*"),
                      SM(r"\s*Annihilation of the first spin contaminant"),
                      SM(r"\s*[A-Z][*][*][0-9]\s*before annihilation\s*(?P<spin_S2>[0-9.]+),\s*after\s*(?P<x_gaussian_after_annihilation_spin_S2>[0-9.]+)"),
-                     SM(r"\s*[()A-Z0-9]+\s*=\s*[-+0-9D.]+\s*[()A-Z0-9]+\s*=\s*(?P<x_gaussian_energy_total_perturbative__hartree>[-+0-9D.]+)"),
+                     SM(r"\s*[()A-Z0-9]+\s*=\s*[-+0-9D.]+\s*[()A-Z0-9]+\s*=\s*(?P<x_gaussian_perturbation_energy__hartree>[-+0-9D.]+)"),
                     ]
                 ),
                     SM(name = 'PerturbationEnergies',
@@ -117,12 +127,12 @@ mainFileDescription = SM(
                     startReStr = r"\s*E2 =\s*",
                     forwardMatch = True,
                     subMatchers = [
-                     SM(r"\s*E2 =\s*(?P<x_gaussian_mp2_correction_energy__hartree>[-+0-9EeDd.]+)\s*EUMP2 =\s*(?P<x_gaussian_mp2_energy__hartree>[-+0-9EeDd.]+)"),
-                     SM(r"\s*E3=\s*(?P<x_gaussian_mp3_correction_energy__hartree>[-+0-9EeDd.]+)\s*EUMP3=\s*(?P<x_gaussian_mp3_energy__hartree>[-+0-9EeDd.]+)\s*"),
-                     SM(r"\s*E4\(DQ\)=\s*(?P<x_gaussian_mp4dq_correction_energy__hartree>[-+0-9EeDd.]+)\s*UMP4\(DQ\)=\s*(?P<x_gaussian_mp4dq_energy__hartree>[-+0-9EeDd.]+)\s*"),
-                     SM(r"\s*E4\(SDQ\)=\s*(?P<x_gaussian_mp4sdq_correction_energy__hartree>[-+0-9EeDd.]+)\s*UMP4\(SDQ\)=\s*(?P<x_gaussian_mp4sdq_energy__hartree>[-+0-9EeDd.]+)"),
-                     SM(r"\s*E4\(SDTQ\)=\s*(?P<x_gaussian_mp4sdtq_correction_energy__hartree>[-+0-9EeDd.]+)\s*UMP4\(SDTQ\)=\s*(?P<x_gaussian_mp4sdtq_energy__hartree>[-+0-9EeDd.]+)"),
-                     SM(r"\s*DEMP5 =\s*(?P<x_gaussian_mp5_correction_energy__hartree>[-+0-9EeDd.]+)\s*MP5 =\s*(?P<x_gaussian_mp5_energy__hartree>[-+0-9EeDd.]+)"),
+                     SM(r"\s*E2 =\s*(?P<x_gaussian_mp2_correction_energy__hartree>[-+0-9EeDd.]+)\s*EUMP2 =\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)"),
+                     SM(r"\s*E3=\s*(?P<x_gaussian_mp3_correction_energy__hartree>[-+0-9EeDd.]+)\s*EUMP3=\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)\s*"),
+                     SM(r"\s*E4\(DQ\)=\s*(?P<x_gaussian_mp4dq_correction_energy__hartree>[-+0-9EeDd.]+)\s*UMP4\(DQ\)=\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)\s*"),
+                     SM(r"\s*E4\(SDQ\)=\s*(?P<x_gaussian_mp4sdq_correction_energy__hartree>[-+0-9EeDd.]+)\s*UMP4\(SDQ\)=\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)"),
+                     SM(r"\s*E4\(SDTQ\)=\s*(?P<x_gaussian_mp4sdtq_correction_energy__hartree>[-+0-9EeDd.]+)\s*UMP4\(SDTQ\)=\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)"),
+                     SM(r"\s*DEMP5 =\s*(?P<x_gaussian_mp5_correction_energy__hartree>[-+0-9EeDd.]+)\s*MP5 =\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)"),
                      ]
                 ),
                     SM(name = 'CoupledClusterEnergies',
@@ -131,8 +141,8 @@ mainFileDescription = SM(
                     endReStr = r"\s*Population analysis using the SCF density",
                     forwardMatch = True,
                     subMatchers = [
-                     SM(r"\s*DE\(Corr\)=\s*(?P<x_gaussian_ccsd_correction_energy__hartree>[-+0-9EeDd.]+)\s*E\(CORR\)=\s*(?P<x_gaussian_ccsd_energy__hartree>[-+0-9EeDd.]+)", repeats = True),
-                     SM(r"\s*CCSD\(T\)=\s*(?P<x_gaussian_ccsdt_energy__hartree>[-+0-9EeDd.]+)"),
+                     SM(r"\s*DE\(Corr\)=\s*(?P<x_gaussian_ccsd_correction_energy__hartree>[-+0-9EeDd.]+)\s*E\(CORR\)=\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)", repeats = True),
+                     SM(r"\s*CCSD\(T\)=\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)"),
                      ]
                 ),
                     SM(name = 'QuadraticCIEnergies',
@@ -141,10 +151,10 @@ mainFileDescription = SM(
                     endReStr = r"\s*Population analysis using the SCF density",
                     forwardMatch = True,
                     subMatchers = [
-                     SM(r"\s*DE\(Z\)=\s*(?P<x_gaussian_qcisd_correction_energy__hartree>[-+0-9EeDd.]+)\s*E\(Z\)=\s*(?P<x_gaussian_qcisd_energy__hartree>[-+0-9EeDd.]+)", repeats = True),
-                     SM(r"\s*DE\(Corr\)=\s*(?P<x_gaussian_qcisd_correction_energy__hartree>[-+0-9EeDd.]+)\s*E\(CORR\)=\s*(?P<x_gaussian_qcisd_energy__hartree>[-+0-9EeDd.]+)", repeats = True),
-                     SM(r"\s*QCISD\(T\)=\s*(?P<x_gaussian_qcisdt_energy__hartree>[-+0-9EeDd.]+)"),
-                     SM(r"\s*DE5\s*=\s*(?P<x_gaussian_qcisdtq_correction_energy__hartree>[-+0-9EeDd.]+)\s*QCISD\(TQ\)\s*=\s*(?P<x_gaussian_qcisdtq_energy__hartree>[-+0-9EeDd.]+)", repeats = True),
+                     SM(r"\s*DE\(Z\)=\s*(?P<x_gaussian_qcisd_correction_energy__hartree>[-+0-9EeDd.]+)\s*E\(Z\)=\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)", repeats = True),
+                     SM(r"\s*DE\(Corr\)=\s*(?P<x_gaussian_qcisd_correction_energy__hartree>[-+0-9EeDd.]+)\s*E\(CORR\)=\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)", repeats = True),
+                     SM(r"\s*QCISD\(T\)=\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)"),
+                     SM(r"\s*DE5\s*=\s*(?P<x_gaussian_qcisdtq_correction_energy__hartree>[-+0-9EeDd.]+)\s*QCISD\(TQ\)\s*=\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)", repeats = True),
                      ]
                 ),
                     SM(name = 'CIEnergies',
@@ -153,7 +163,7 @@ mainFileDescription = SM(
                     endReStr = r"\s*Population analysis using the SCF density",
                     forwardMatch = True,
                     subMatchers = [
-                     SM(r"\s*DE\(CI\)=\s*(?P<x_gaussian_ci_correction_energy__hartree>[-+0-9EeDd.]+)\s*E\(CI\)=\s*(?P<x_gaussian_ci_energy__hartree>[-+0-9EeDd.]+)", repeats = True),
+                     SM(r"\s*DE\(CI\)=\s*(?P<x_gaussian_ci_correction_energy__hartree>[-+0-9EeDd.]+)\s*E\(CI\)=\s*(?P<energy_total__hartree>[-+0-9EeDd.]+)", repeats = True),
                      ]
                 ),
                     SM(name = 'SemiempiricalEnergies',
@@ -164,7 +174,7 @@ mainFileDescription = SM(
                     subMatchers = [
                      SM(r"\s*(?P<x_gaussian_semiempirical_method>[-A-Z0-9]+\s*calculation of energy[a-zA-Z,. ]+)"),
                      SM(r"\s*It=\s*[0-9]+\s*PL=\s*[-+0-9EeDd.]+\s*DiagD=[A-Z]\s*ESCF=\s*(?P<x_gaussian_semiempirical_energy>[-+0-9.]+)\s*", repeats = True),
-                     SM(r"\s*Energy=\s*(?P<x_gaussian_semiempirical_energy_converged>[-+0-9EeDd.]+)"),
+                     SM(r"\s*Energy=\s*(?P<energy_total>[-+0-9EeDd.]+)"),
                      ]
                 ),
                     SM(name = 'MolecularMechanicsEnergies',
@@ -174,7 +184,7 @@ mainFileDescription = SM(
                     repeats = True,
                     subMatchers = [
                      SM(r"\s*(?P<x_gaussian_molmech_method>[a-zA-Z0-9]+\s*calculation of energy[a-z,. ]+)"),
-                     SM(r"\s*Energy=\s*(?P<x_gaussian_molmech_energy>[-+0-9EeDd.]+)\s*NIter=\s*[0-9.]"),
+                     SM(r"\s*Energy=\s*(?P<energy_total>[-+0-9EeDd.]+)\s*NIter=\s*[0-9.]"),
                      ]
                 ),
                   SM(name = 'ExcitedStates',
@@ -185,8 +195,8 @@ mainFileDescription = SM(
                    subMatchers = [
                     SM(name = 'ExcitedStates',
                     sections = ['x_gaussian_section_excited'],
-                    startReStr = r"\s*Excited State\s*",
-                    forwardMatch = True,
+                    startReStr = r"\s*Excited State",
+                    forwardMatch = False,
                     repeats = True,
                     subMatchers = [
                      SM(r"\s*Excited State\s*(?P<x_gaussian_excited_state_number>[0-9]+):\s*[-+0-9A-Za-z.\?]+\s*(?P<x_gaussian_excited_energy__eV>[0-9.]+)\s*eV\s*[0-9.]+\s*nm\s*f=(?P<x_gaussian_excited_oscstrength>[0-9.]+)\s*<[A-Z][*][*][0-9]>=(?P<x_gaussian_excited_spin_squared>[0-9.]+)"),
@@ -244,7 +254,7 @@ mainFileDescription = SM(
                       ]
              ),
                 SM(name = 'Eigenvalues',
-                sections = ['x_gaussian_section_eigenvalues'],
+                sections = ['section_eigenvalues'],
                 startReStr = r"\s*Alpha  occ. eigenvalues --",
                 forwardMatch = True,
                 subFlags = SM.SubFlags.Sequenced,
@@ -335,20 +345,20 @@ mainFileDescription = SM(
                 forwardMatch = False,
                 repeats = True,
                 subMatchers = [
-                 SM(r"\s*G1\(0 K\)=\s*[-+0-9.]+\s*G1 Energy=\s*(?P<x_gaussian_G1_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*G2\(0 K\)=\s*[-+0-9.]+\s*G2 Energy=\s*(?P<x_gaussian_G2_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*G2MP2\(0 K\)=\s*[-+0-9.]+\s*G2MP2 Energy=\s*(?P<x_gaussian_G2MP2_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*G3\(0 K\)=\s*[-+0-9.]+\s*G3 Energy=\s*(?P<x_gaussian_G3_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*G3MP2\(0 K\)=\s*[-+0-9.]+\s*G3MP2 Energy=\s*(?P<x_gaussian_G3MP2_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*G4\(0 K\)=\s*[-+0-9.]+\s*G4 Energy=\s*(?P<x_gaussian_G4_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*G4MP2\(0 K\)=\s*[-+0-9.]+\s*G4MP2 Energy=\s*(?P<x_gaussian_G4MP2_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*CBS-4 \(0 K\)=\s*[-+0-9.]+\s*CBS-4 Energy=\s*(?P<x_gaussian_CBS4_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*CBS-q \(0 K\)=\s*[-+0-9.]+\s*CBS-q Energy=\s*(?P<x_gaussian_CBSq_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*CBS-Q \(0 K\)=\s*[-+0-9.]+\s*CBS-Q Energy=\s*(?P<x_gaussian_CBSQ_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*CBS-QB3 \(0 K\)=\s*[-+0-9.]+\s*CBS-QB3 Energy=\s*(?P<x_gaussian_CBSQB3_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*W1U  \(0 K\)=\s*[-+0-9.]+\s*W1U   Electronic Energy\s*(?P<x_gaussian_W1U_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*W1RO  \(0 K\)=\s*[-+0-9.]+\s*W1RO  Electronic Energy\s*(?P<x_gaussian_W1RO_energy__hartree>[-+0-9.]+)"),
-                 SM(r"\s*W1BD  \(0 K\)=\s*[-+0-9.]+\s*W1BD  Electronic Energy\s*(?P<x_gaussian_W1BD_energy__hartree>[-+0-9.]+)"),
+                 SM(r"\s*G1\(0 K\)=\s*[-+0-9.]+\s*G1 Energy=\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*G2\(0 K\)=\s*[-+0-9.]+\s*G2 Energy=\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*G2MP2\(0 K\)=\s*[-+0-9.]+\s*G2MP2 Energy=\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*G3\(0 K\)=\s*[-+0-9.]+\s*G3 Energy=\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*G3MP2\(0 K\)=\s*[-+0-9.]+\s*G3MP2 Energy=\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*G4\(0 K\)=\s*[-+0-9.]+\s*G4 Energy=\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*G4MP2\(0 K\)=\s*[-+0-9.]+\s*G4MP2 Energy=\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*CBS-4 \(0 K\)=\s*[-+0-9.]+\s*CBS-4 Energy=\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*CBS-q \(0 K\)=\s*[-+0-9.]+\s*CBS-q Energy=\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*CBS-Q \(0 K\)=\s*[-+0-9.]+\s*CBS-Q Energy=\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*CBS-QB3 \(0 K\)=\s*[-+0-9.]+\s*CBS-QB3 Energy=\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*W1U  \(0 K\)=\s*[-+0-9.]+\s*W1U   Electronic Energy\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*W1RO  \(0 K\)=\s*[-+0-9.]+\s*W1RO  Electronic Energy\s*(?P<energy_total__hartree>[-+0-9.]+)"),
+                 SM(r"\s*W1BD  \(0 K\)=\s*[-+0-9.]+\s*W1BD  Electronic Energy\s*(?P<energy_total__hartree>[-+0-9.]+)"),
                        ]
              ),
                 SM(name = 'run times',
@@ -387,8 +397,9 @@ class GaussianParserContext(object):
       def __init__(self):
         # dictionary of energy values, which are tracked between SCF iterations and written after convergence
         self.totalEnergyList = {
-                                'x_gaussian_energy_total': None,
-                                'x_gaussian_energy_total_perturbative': None,
+                                'x_gaussian_hf_detect': None,
+                                'x_gaussian_energy_scf': None,
+                                'x_gaussian_perturbation_energy': None,
                                 'x_gaussian_electronic_kinetic_energy': None,
                                 'x_gaussian_energy_electrostatic': None,
                                 'x_gaussian_energy_error': None,
@@ -511,14 +522,20 @@ class GaussianParserContext(object):
         # check for SCF convergence
         if section['x_gaussian_single_configuration_calculation_converged'] is not None:
            self.scfConvergence = True
-           if section['x_gaussian_energy_total']:
-              if section['x_gaussian_electronic_kinetic_energy']:
-                 self.scfenergyconverged = float(str(section['x_gaussian_energy_total']).replace("[","").replace("]","").replace("D","E"))
-                 self.scfkineticenergyconverged = float(str(section['x_gaussian_electronic_kinetic_energy']).replace("[","").replace("]","").replace("D","E"))
-                 self.scfelectrostaticenergy = self.scfenergyconverged - self.scfkineticenergyconverged
-                 backend.addValue('x_gaussian_energy_electrostatic', self.scfelectrostaticenergy)
+           if section['x_gaussian_energy_scf']:
+               self.scfenergyconverged = float(str(section['x_gaussian_energy_scf']).replace("[","").replace("]","").replace("D","E"))
+               self.scfcharacter = section['x_gaussian_hf_detect']
+               if (self.scfcharacter != ['RHF'] and self.scfcharacter != ['ROHF'] and self.scfcharacter != ['UHF']):
+                  self.energytotal = self.scfenergyconverged
+                  backend.addValue('energy_total', self.energytotal)
+               else:
+                  pass
+               if section['x_gaussian_electronic_kinetic_energy']:
+                  self.scfkineticenergyconverged = float(str(section['x_gaussian_electronic_kinetic_energy']).replace("[","").replace("]","").replace("D","E"))
+                  self.scfelectrostaticenergy = self.scfenergyconverged - self.scfkineticenergyconverged
+                  backend.addValue('x_gaussian_energy_electrostatic', self.scfelectrostaticenergy)
 
-      def onClose_x_gaussian_section_eigenvalues(self, backend, gIndex, section):
+      def onClose_section_eigenvalues(self, backend, gIndex, section):
           eigenenergies = str(section["x_gaussian_alpha_occ_eigenvalues_values"])
           eigenen1 = []
           energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
@@ -533,12 +550,17 @@ class GaussianParserContext(object):
           energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
           eigenen2 = np.append(eigenen2, energy)
           viroccupationsalp = np.zeros(len(eigenen2), dtype=float)
-          eigenencon = np.zeros(len(eigenen1) + len(eigenen2))
-          eigenencon = np.concatenate((eigenen1,eigenen2), axis=0)
-          eigenencon = convert_unit(eigenencon, "hartree", "J")
-          occupcon = np.concatenate((occoccupationsalp, viroccupationsalp), axis=0)
-          backend.addArrayValues("x_gaussian_alpha_eigenvalues", eigenencon)
-          backend.addArrayValues("x_gaussian_alpha_occupations", occupcon)
+          eigenenconalp = np.zeros(len(eigenen1) + len(eigenen2))
+          eigenenconalp = np.concatenate((eigenen1,eigenen2), axis=0)
+          eigenenconalp = convert_unit(eigenenconalp, "hartree", "J")
+          occupconalp = np.concatenate((occoccupationsalp, viroccupationsalp), axis=0)
+          eigenenconalpnew = np.reshape(eigenenconalp,(1, 1, len(eigenenconalp)))
+          occupconalpnew = np.reshape(occupconalp,(1, 1, len(occupconalp)))
+          if(section["x_gaussian_beta_occ_eigenvalues_values"]):
+             pass
+          else:
+             backend.addArrayValues("eigenvalues_values", eigenenconalpnew)
+             backend.addArrayValues("eigenvalues_occupation", occupconalpnew)
 
           if(section["x_gaussian_beta_occ_eigenvalues_values"]):
              eigenenergies = str(section["x_gaussian_beta_occ_eigenvalues_values"])
@@ -551,12 +573,16 @@ class GaussianParserContext(object):
              energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
              eigenen2 = np.append(eigenen2, energy)
              viroccupationsbet = np.zeros(len(eigenen2), dtype=float)
-             eigenencon = np.zeros(len(eigenen1) + len(eigenen2))
-             eigenencon = np.concatenate((eigenen1,eigenen2), axis=0)
-             eigenencon = convert_unit(eigenencon, "hartree", "J")
-             occupcon = np.concatenate((occoccupationsbet, viroccupationsbet), axis=0)
-             backend.addArrayValues("x_gaussian_beta_eigenvalues", eigenencon)
-             backend.addArrayValues("x_gaussian_beta_occupations", occupcon)
+             eigenenconbet = np.zeros(len(eigenen1) + len(eigenen2))
+             eigenenconbet = np.concatenate((eigenen1,eigenen2), axis=0)
+             eigenenconbet = convert_unit(eigenenconbet, "hartree", "J")
+             occupconbet = np.concatenate((occoccupationsbet, viroccupationsbet), axis=0)
+             eigenenall = np.concatenate((eigenenconalp,eigenenconbet), axis=0)
+             occupall = np.concatenate((occupconalp,occupconbet), axis=0)
+             eigenenall = np.reshape(eigenenall,(2, 1, len(eigenenconalp)))
+             occupall = np.reshape(occupall,(2, 1, len(occupconalp)))
+             backend.addArrayValues("eigenvalues_values", eigenenall)
+             backend.addArrayValues("eigenvalues_occupation", occupall)
 
       def onClose_x_gaussian_section_orbital_symmetries(self, backend, gIndex, section):
           symoccalpha = str(section["x_gaussian_alpha_occ_symmetry_values"])
@@ -770,12 +796,8 @@ class GaussianParserContext(object):
         self.secMethodIndex = gIndex
 
       def onClose_section_method(self, backend, gIndex, section):
-        # handling of xc functional
-        # two functions to convert hybrid_xc_coeff to the correct weight
-        def GGA_weight(x):
-          return 1.0 - x
-        def HF_weight(x):
-          return x
+       # handling of xc functional
+       # two functions to convert hybrid_xc_coeff to the correct weight
        # TODO vdW functionals and double-hybrid functionals
        # Dictionary for conversion of xc functional name in aims to metadata format.
        # The individual x and c components of the functional are given as dictionaries.
@@ -848,7 +870,7 @@ class GaussianParserContext(object):
               'HSEH1PBE':   [{'name': 'HYB_GGA_XC_HSE06'}],
               'OHSE1PBE':   [{'name': 'HYB_GGA_XC_HSEOLD'}],
               'PBEH1PBE':   [{'name': 'HYB_GGA_XC_PBEH1PBE'}],
-              'PBE1PBE':    [{'name': 'GGA_C_PBE'}, {'name': 'GGA_X_PBE', 'weight': 0.75, 'convert': GGA_weight}, {'name': 'HF_X', 'weight': 0.25, 'convert': HF_weight}],
+              'PBE1PBE':    [{'name': 'HYB_GGA_XC_PBE1PBE'}],
               'M05':        [{'name': 'HYB_MGGA_XC_M05'}],
               'M052X':      [{'name': 'HYB_MGGA_XC_M05_2X'}],
               'M06':        [{'name': 'HYB_MGGA_XC_M06'}],
@@ -1243,56 +1265,31 @@ class GaussianParserContext(object):
              if 'ONIOM' in method2:
                 methodreal = method2
         
-# description for hybrid coefficient
-        xcHybridCoeffDescr = 'hybrid coefficient $\\alpha$'
-        hseFunc = 'HSEH1PBE'
-# functionals where hybrid_xc_coeff is written
-        writeHybridCoeff = ['B3LYP', 'OHSE2PBE', 'HSEh1PBE', 'PBE1PBE' ]
+# functionals where hybrid_xc_coeff are written
+
+#        writeHybridCoeff = ['PBE1PBE']
         if xc is not None:
           # check if only one xc keyword was found in output
           if len([xc]) > 1:
               logger.error("Found %d settings for the xc functional: %s. This leads to an undefined behavior of the calculation and no metadata can be written for xc." % (len(xc), xc))
           else:
               backend.superBackend.addValue('x_gaussian_xc', [xc][-1])
-            # check for hybrid_xc_coeff
-#                hybridCoeff = valuesDict.get('hybrid_xc_coeff')
-            # write hybrid_xc_coeff for certain functionals
-#                if hybridCoeff is not None and xc[-1] in writeHybridCoeff:
-#                    backend.superBackend.addValue('hybrid_xc_coeff', hybridCoeff[-1])
-            # convert xc functional for metadata
               if xcWrite:
               # get list of xc components according to parsed value
                   xcList = xcDict.get([xc][-1])
                   if xcList is not None:
-                  # loop over the xc components
+                    # loop over the xc components
                       for xcItem in xcList:
                           xcName = xcItem.get('name')
                           if xcName is not None:
                           # write section and XC_functional_name
                               gIndexTmp = backend.openSection('section_XC_functionals')
                               backend.addValue('XC_functional_name', xcName)
-                            # write hybrid_xc_coeff for B3LYP and HSE03 into XC_functional_parameters
-#                                if hybridCoeff is not None and xc[-1] in ['B3LYP', 'OHSE2PBE']:
-#                                    backend.addValue('XC_functional_parameters', {xcHybridCoeffDescr: hybridCoeff[-1]})
-                            # write hybrid_xc_coeff for HSE06
-#                                elif xc[-1] == hseFunc:
-                                # add hybrid_xc_coeff
-#                                    if hybridCoeff is not None:
-#                                        hybrid = hybridCoeff[-1]
-#                                    else:
-#                                        hybrid = 0.25
-#                                    parameters[xcHybridCoeffDescr] = hybrid
-#                                    backend.addValue('XC_functional_parameters', parameters)
-                            # adjust weight of functionals that are affected by hybrid_xc_coeff
-#                                elif hybridCoeff is not None and 'convert' in xcItem:
-#                                    backend.addValue('XC_functional_weight', xcItem['convert'](hybridCoeff[-1]))
-                            # write weight if present for current xcItem
-#                                else:
-#                                    xcWeight = xcItem.get('weight')
-#                                    if xcWeight is not None:
-#                                        backend.addValue('XC_functional_weight', xcWeight)
-                              backend.closeSection('section_XC_functionals', gIndexTmp)
+                              # write hybrid_xc_coeff for PBE1PBE into XC_functional_parameters
+#                              if hybridCoeff is not None and 'convert' in xcItem:
+#                                  backend.addValue('XC_functional_parameters', xcItem['convert'](hybridCoeff[-1])) 
                           else:
+                              backend.closeSection('section_XC_functionals', gIndexTmp)
                               logger.error("The dictionary for xc functional '%s' does not have the key 'name'. Please correct the dictionary xcDict in %s." % (xc[-1], os.path.basename(__file__)))
                   else:
                       logger.error("The xc functional '%s' could not be converted for the metadata. Please add it to the dictionary xcDict in %s." % (xc[-1], os.path.basename(__file__)))
@@ -1315,10 +1312,10 @@ class GaussianParserContext(object):
                  # write section and method name
                            gIndexTmp = backend.openSection('x_gaussian_section_elstruc_method')
                            if methodprefix != None and methodreal != None:
-                              backend.addValue('x_gaussian_elstruc_method_name', str(methodprefix) + methodreal)
+                              backend.addValue('x_gaussian_electronic_structure_method', str(methodprefix) + methodreal)
                               backend.closeSection('x_gaussian_section_elstruc_method', gIndexTmp)
                            elif methodreal != None:
-                              backend.addValue('x_gaussian_elstruc_method_name', methodreal)
+                              backend.addValue('x_gaussian_electronic_structure_method', methodreal)
                               backend.closeSection('x_gaussian_section_elstruc_method', gIndexTmp)
                         else:
                               logger.error("The dictionary for method '%s' does not have the key 'name'. Please correct the dictionary methodDict in %s." % (method[-1], os.path.basename(__file__)))
@@ -1352,6 +1349,20 @@ class GaussianParserContext(object):
       def onOpen_section_system(self, backend, gIndex, section):
           # keep track of the latest system description section
           self.secSystemDescriptionIndex = gIndex
+
+      def onClose_x_gaussian_section_hybrid_coeffs(self, backend, gIndex, section):
+          # assign the coefficients to the hybrid functionals
+
+          hybrid_xc_coeffsa = ()
+          hybrid_xc_coeffsb = ()
+          hybrid_xc_coeffsa = float(str(section['hybrid_xc_coeff1']).replace("[","").replace("]",""))
+          backend.addValue('x_gaussian_hybrid_xc_hfx', hybrid_xc_coeffsa)
+          hybrid_xc_coeffs = str(section['hybrid_xc_coeff2'])
+          hybrid_xc_coeffsb = [float(f) for f in hybrid_xc_coeffs[1:].replace("'","").replace("]","").replace("]","").split()]
+          backend.addValue('x_gaussian_hybrid_xc_slater', hybrid_xc_coeffsb[0])
+          backend.addValue('x_gaussian_hybrid_xc_nonlocalex', hybrid_xc_coeffsb[1])
+          backend.addValue('x_gaussian_hybrid_xc_localcorr', hybrid_xc_coeffsb[2])
+          backend.addValue('x_gaussian_hybrid_xc_nonlocalcorr', hybrid_xc_coeffsb[3])
 
       def onClose_section_system(self, backend, gIndex, section):
             # write/store unit cell if present and set flag self.periodicCalc
@@ -1400,11 +1411,10 @@ cachingLevelForMetaName = {
         "section_scf_iteration": CachingLevel.Forward,
         "energy_total_scf_iteration": CachingLevel.ForwardAndCache,
         "x_gaussian_delta_energy_total_scf_iteration": CachingLevel.ForwardAndCache, 
-        "x_gaussian_energy_total": CachingLevel.ForwardAndCache,
+        "energy_total": CachingLevel.ForwardAndCache,
         "x_gaussian_energy_error": CachingLevel.ForwardAndCache,
         "x_gaussian_electronic_kinetic_energy": CachingLevel.ForwardAndCache,
         "x_gaussian_energy_electrostatic": CachingLevel.ForwardAndCache, 
-        "x_gaussian_energy_total_perturbative": CachingLevel.ForwardAndCache,
         "x_gaussian_section_frequencies": CachingLevel.Forward,
         "x_gaussian_frequency_values": CachingLevel.Cache,
         "x_gaussian_frequencies": CachingLevel.ForwardAndCache,
@@ -1416,15 +1426,9 @@ cachingLevelForMetaName = {
         "x_gaussian_section_force_constant_matrix": CachingLevel.Forward,
         "x_gaussian_force_constant_values": CachingLevel.ForwardAndCache,
         "x_gaussian_force_constants": CachingLevel.Cache,
-        "x_gaussian_section_eigenvalues": CachingLevel.Forward,
-        "x_gaussian_alpha_occ_eigenvalues_values":CachingLevel.Cache,
-        "x_gaussian_alpha_vir_eigenvalues_values":CachingLevel.Cache,
-        "x_gaussian_alpha_eigenvalues": CachingLevel.ForwardAndCache,
-        "x_gaussian_alpha_occupations": CachingLevel.ForwardAndCache,
-        "x_gaussian_beta_occ_eigenvalues_values":CachingLevel.Cache,
-        "x_gaussian_beta_vir_eigenvalues_values":CachingLevel.Cache,
-        "x_gaussian_beta_eigenvalues": CachingLevel.ForwardAndCache,
-        "x_gaussian_beta_occupations": CachingLevel.ForwardAndCache,
+        "section_eigenvalues": CachingLevel.Forward,
+        "eigenvalues_values": CachingLevel.ForwardAndCache, 
+        "eigenvalues_occupation": CachingLevel.ForwardAndCache,
         "x_gaussian_section_orbital_symmetries": CachingLevel.Forward,
         "x_gaussian_alpha_occ_symmetry_values":CachingLevel.Cache,
         "x_gaussian_alpha_vir_symmetry_values":CachingLevel.Cache,
@@ -1472,11 +1476,13 @@ cachingLevelForMetaName = {
         "x_gaussian_single_configuration_calculation_converged": CachingLevel.ForwardAndCache,
         "x_gaussian_section_geometry_optimization_info": CachingLevel.Forward,
         "x_gaussian_geometry_optimization_converged": CachingLevel.ForwardAndCache,
+        "x_gaussian_hf_detect": CachingLevel.ForwardAndCache,
+        "x_gaussian_section_hybrid_coeffs": CachingLevel.Forward,
         "section_method": CachingLevel.Forward,
-        "x_gaussian_section_elstruc_method": CachingLevel.ForwardAndCache,
-        "x_gaussian_elstruc_method_name": CachingLevel.ForwardAndCache,
+        "x_gaussian_section_elstruc_method": CachingLevel.Forward,
+        "x_gaussian_electronic_structure_method": CachingLevel.ForwardAndCache,
         "XC_functional_name": CachingLevel.ForwardAndCache, 
-        "basis_set_atom_centered_short_name": CachingLevel.ForwardAndCache,
+        "basis_set_atom_centered_short_name": CachingLevel.Forward,
         "x_gaussian_settings": CachingLevel.Cache,
         "x_gaussian_settings_corrected": CachingLevel.ForwardAndCache,
         "section_system": CachingLevel.Forward,
