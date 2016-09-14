@@ -797,13 +797,9 @@ class GaussianParserContext(object):
 
       def onClose_section_method(self, backend, gIndex, section):
        # handling of xc functional
-       # two functions to convert hybrid_xc_coeff to the correct weight
-       # TODO vdW functionals and double-hybrid functionals
-       # Dictionary for conversion of xc functional name in aims to metadata format.
+       # Dictionary for conversion of xc functional name in Gaussian to metadata format.
        # The individual x and c components of the functional are given as dictionaries.
-       # Possible keys of such a dictionary are 'name', 'weight', and 'convert'.
-       # If 'weight' is not given it is not written.
-       # With 'convert', a funtion is specified how hybrid_xc_coeff is converted to the correct weight for this xc component.
+       # Possible key of such a dictionary is 'name'.
         xcDict = {
               'S':          [{'name': 'LDA_X'}],
               'XA':	    [{'name': 'X_ALPHA'}],
@@ -1267,7 +1263,6 @@ class GaussianParserContext(object):
         
 # functionals where hybrid_xc_coeff are written
 
-#        writeHybridCoeff = ['PBE1PBE']
         if xc is not None:
           # check if only one xc keyword was found in output
           if len([xc]) > 1:
@@ -1286,8 +1281,6 @@ class GaussianParserContext(object):
                               gIndexTmp = backend.openSection('section_XC_functionals')
                               backend.addValue('XC_functional_name', xcName)
                               # write hybrid_xc_coeff for PBE1PBE into XC_functional_parameters
-#                              if hybridCoeff is not None and 'convert' in xcItem:
-#                                  backend.addValue('XC_functional_parameters', xcItem['convert'](hybridCoeff[-1])) 
                           else:
                               backend.closeSection('section_XC_functionals', gIndexTmp)
                               logger.error("The dictionary for xc functional '%s' does not have the key 'name'. Please correct the dictionary xcDict in %s." % (xc[-1], os.path.basename(__file__)))
