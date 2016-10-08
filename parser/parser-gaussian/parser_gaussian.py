@@ -301,20 +301,26 @@ mainFileDescription = SM(
                       SM(r"\s+\w+=\s+(?P<hexadecapole_moment_xxyz>[-+0-9EeDd.]+)\s+\w+=\s+(?P<hexadecapole_moment_yyxz>[-+0-9EeDd.]+)\s+\w+=\s+(?P<hexadecapole_moment_zzxy>[-+0-9EeDd.]+)")
                       ]
              ),    
-                     SM (name = 'Frequencies',
+                SM (name = 'Frequencies',
                      sections = ['x_gaussian_section_frequencies'],
-                     startReStr = r"\s*Frequencies --",
+                     startReStr = r"\s*Frequencies --\s+(?:(?:[-]?[0-9]+\.\d*)\s*(?:[-]?[-0-9]+\.\d*)?\s*(?:[-]?[-0-9]+\.\d*)?)",
                      endReStr = r"\s*- Thermochemistry -",
                      forwardMatch = True,
-                     repeats = True,
-                     subFlags = SM.SubFlags.Unordered,
+                     repeats = False,
                      subMatchers = [
-                          SM(r"\s*Frequencies --\s+(?P<x_gaussian_frequency_values>([-]?[0-9]+\.\d*)\s*([-]?[-0-9]+\.\d*)?\s*([-]?[-0-9]+\.\d*)?)", repeats = True),
-                          SM(r"\s*Red. masses --\s+(?P<x_gaussian_reduced_masses>(.+))", repeats = True),
-                          SM(r"\s*[0-9]+\s*[0-9]+\s*(?P<x_gaussian_normal_modes>([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+))", repeats = True),
-                          SM(r"\s*[0-9]+\s*([0-9]+)?\s*([0-9]+)?"),
-                      ]
-             ),
+                       SM (name = 'Frequencies',
+                         startReStr = r"\s*Frequencies --\s+(?:(?:[-]?[0-9]+\.\d*)\s*(?:[-]?[-0-9]+\.\d*)?\s*(?:[-]?[-0-9]+\.\d*)?)",
+                         forwardMatch = True,
+                         repeats = True,
+                         subFlags = SM.SubFlags.Unordered,
+                         subMatchers = [
+                           SM(r"\s*Frequencies --\s+(?P<x_gaussian_frequency_values>([-]?[0-9]+\.\d*)\s*([-]?[-0-9]+\.\d*)?\s*([-]?[-0-9]+\.\d*)?)", repeats = True),
+                           SM(r"\s*Red. masses --\s+(?P<x_gaussian_reduced_masses>(.+))", repeats = True),
+                           SM(r"\s*[0-9]+\s*[0-9]+\s*(?P<x_gaussian_normal_modes>([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+)\s*([-0-9.]+))", repeats = True),
+                           SM(r"\s*[0-9]+\s*([0-9]+)?\s*([0-9]+)?"),
+                         ])
+                     ]
+                ),
                 SM(name = 'Thermochemistry',
                 sections = ['x_gaussian_section_thermochem'],
                 startReStr = r"\s*Temperature",
