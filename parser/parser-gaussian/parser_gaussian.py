@@ -1287,8 +1287,8 @@ class GaussianParserContext(object):
                               gIndexTmp = backend.openSection('section_XC_functionals')
                               backend.addValue('XC_functional_name', xcName)
                               # write hybrid_xc_coeff for PBE1PBE into XC_functional_parameters
-                          else:
                               backend.closeSection('section_XC_functionals', gIndexTmp)
+                          else:
                               logger.error("The dictionary for xc functional '%s' does not have the key 'name'. Please correct the dictionary xcDict in %s." % (xc[-1], os.path.basename(__file__)))
                   else:
                       logger.error("The xc functional '%s' could not be converted for the metadata. Please add it to the dictionary xcDict in %s." % (xc[-1], os.path.basename(__file__)))
@@ -1309,11 +1309,12 @@ class GaussianParserContext(object):
                         methodName = methodItem.get('name')
                         if methodName is not None:
                  # write section and method name
-                           gIndexTmp = backend.openSection('x_gaussian_section_elstruc_method')
                            if methodprefix != None and methodreal != None:
+                              gIndexTmp = backend.openSection('x_gaussian_section_elstruc_method')
                               backend.addValue('x_gaussian_electronic_structure_method', str(methodprefix) + methodreal)
                               backend.closeSection('x_gaussian_section_elstruc_method', gIndexTmp)
                            elif methodreal != None:
+                              gIndexTmp = backend.openSection('x_gaussian_section_elstruc_method')
                               backend.addValue('x_gaussian_electronic_structure_method', methodreal)
                               backend.closeSection('x_gaussian_section_elstruc_method', gIndexTmp)
                         else:
