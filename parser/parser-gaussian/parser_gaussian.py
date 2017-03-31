@@ -1388,6 +1388,10 @@ class GaussianParserContext(object):
                   if np.shape(unit_cell) == (3, 3):
                     backend.addArrayValues('configuration_periodic_dimensions', np.asarray([True, True, True]))
                   self.periodicCalc = True
+            else:
+              unit_cell = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]
+              backend.addArrayValues('simulation_cell', np.asarray(unit_cell))
+              backend.addArrayValues('configuration_periodic_dimensions', np.asarray([False, False, False]))
             if(section["x_gaussian_atomic_masses"]):
                atomicmasses = str(section["x_gaussian_atomic_masses"])
                atmass = []
