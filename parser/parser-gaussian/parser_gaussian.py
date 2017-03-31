@@ -1043,7 +1043,9 @@ class GaussianParserContext(object):
         exccorr = None
 
         settings = section["x_gaussian_settings"]
-        settings = map(str.strip, settings)  
+        settings1 = str(settings[0]).strip()
+        settings2 = str(settings[1]).strip()
+        settings = [settings1, settings2]
         settings = [''.join(map(str,settings))]
         settings = str(settings)
         settings = re.sub('[-]{2,}', '', settings)
