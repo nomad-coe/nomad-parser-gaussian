@@ -72,7 +72,7 @@ mainFileDescription = SM(
                   forwardMatch = True,
                   subMatchers = [
                       SM(r"\s*Charge =\s*(?P<x_gaussian_total_charge>[-+0-9]*) Multiplicity =\s*(?P<x_gaussian_spin_target_multiplicity>[0-9]*)"),
-                      SM(r"\s*(Tv|Tv\s*[0]|TV|TV\s*[0])\s*(?P<x_gaussian_geometry_lattice_vector_x>[0-9.]*)\s+(?P<x_gaussian_geometry_lattice_vector_y>[0-9.]*)\s+(?P<x_gaussian_geometry_lattice_vector_z>[0-9.]*)", repeats = True),
+                      SM(r"\s*(Tv|Tv\s*[0]|TV|TV\s*[0])\s*(?P<x_gaussian_geometry_lattice_vector_x>[0-9.]+)\s+(?P<x_gaussian_geometry_lattice_vector_y>[0-9.]+)\s+(?P<x_gaussian_geometry_lattice_vector_z>[0-9.]+)", repeats = True),
                       SM(r"\s*AtmWgt=\s+(?P<x_gaussian_atomic_masses>[0-9.]+(\s+[0-9.]+)(\s+[0-9.]+)?(\s+[0-9.]+)?(\s+[0-9.]+)?(\s+[0-9.]+)?(\s+[0-9.]+)?(\s+[0-9.]+)?(\s+[0-9.]+)?(\s+[0-9.]+)?)", repeats = True)
                       ]
              ),
@@ -92,7 +92,7 @@ mainFileDescription = SM(
                    startReStr = r"\s*Standard orientation:",
                    endReStr = r"\s*Rotational constants",
                       subMatchers = [
-                      SM(r"\s+[0-9]+\s+(?P<x_gaussian_atomic_number>[0-9]+)\s+[0-9]+\s+(?P<x_gaussian_atom_x_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<x_gaussian_atom_y_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<x_gaussian_atom_z_coord__angstrom>[-+0-9EeDd.]+)",repeats = True),
+                      SM(r"\s+[0-9]+\s+(?P<x_gaussian_atomic_number>[0-9]+)\s+[0-9]*\s+(?P<x_gaussian_atom_x_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<x_gaussian_atom_y_coord__angstrom>[-+0-9EeDd.]+)\s+(?P<x_gaussian_atom_z_coord__angstrom>[-+0-9EeDd.]+)",repeats = True),
                       SM(r"\s*Rotational constants")
                     ]
                 ),
@@ -101,8 +101,9 @@ mainFileDescription = SM(
                     startReStr = r"\s*IExCor=",
                     forwardMatch = True,
                     subMatchers = [
-                     SM(r"\s*IExCor=\s*[0-9]+\s*DFT=[A-Z]\s*Ex\+Corr=[A-Z0-9]+\s*ExCW=[0-9]\s*ScaHFX=\s*(?P<hybrid_xc_coeff1>[0-9.]+)"),
-                     SM(r"\s*IExCor=\s*[0-9]+\s*DFT=[A-Z]\s*Ex\=[A-Z0-9]+\s*Corr=[a-zA-Z0-9]+\s*ExCW=[0-9]\s*ScaHFX=\s*(?P<hybrid_xc_coeff1>[0-9.]+)"),
+                     SM(r"\s*IExCor=\s*[0-9-]+\s*DFT=[A-Z]\s*Ex\+Corr=[a-zA-Z0-9]+\s*ExCW=[0-9]\s*ScaHFX=\s*(?P<hybrid_xc_coeff1>[0-9.]+)"),
+                     SM(r"\s*IExCor=\s*[0-9-]+\s*DFT=[A-Z]\s*Ex\=[a-zA-Z0-9+]+\s*Corr=[ a-zA-Z0-9]+\s*?ExCW=[0-9]\s*ScaHFX=\s*(?P<hybrid_xc_coeff1>[0-9.]+)"),
+                     SM(r"\s*IExCor=\s*[0-9-]+\s*DFT=[A-Z]\s*Ex\=[a-zA-Z0-9+]+\s*Corr=[ a-zA-Z0-9]+\s*ScaHFX=\s*(?P<hybrid_xc_coeff1>[0-9.]+)"),
                      SM(r"\s*ScaDFX=\s*(?P<hybrid_xc_coeff2>[0-9.]+\s*[0-9.]+\s*[0-9.]+\s*[0-9.]+)")
                     ]
                 ),
@@ -259,10 +260,10 @@ mainFileDescription = SM(
                 forwardMatch = True,
                 subFlags = SM.SubFlags.Sequenced,
                 subMatchers = [
-                      SM(r"\s*Alpha  occ. eigenvalues --\s+(?P<x_gaussian_alpha_occ_eigenvalues_values>(.+)?)", repeats = True), 
-                      SM(r"\s*Alpha virt. eigenvalues --\s+(?P<x_gaussian_alpha_vir_eigenvalues_values>(.+)?)", repeats = True),
-                      SM(r"\s*Beta  occ. eigenvalues --\s+(?P<x_gaussian_beta_occ_eigenvalues_values>(.+)?)", repeats = True),
-                      SM(r"\s*Beta virt. eigenvalues --\s+(?P<x_gaussian_beta_vir_eigenvalues_values>(.+)?)", repeats = True),
+                      SM(r"\s*Alpha  occ. eigenvalues --\s+(?P<x_gaussian_alpha_occ_eigenvalues_values>-?[^\s.-]+\s+|(\-?\d*\.\d*)\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?)", repeats = True), 
+                      SM(r"\s*Alpha virt. eigenvalues --\s+(?P<x_gaussian_alpha_vir_eigenvalues_values>-?[^\s.-]+\s+|(\-?\d*\.\d*)\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?)", repeats = True),
+                      SM(r"\s*Beta  occ. eigenvalues --\s+(?P<x_gaussian_beta_occ_eigenvalues_values>-?[^\s.-]+\s+|(\-?\d*\.\d*)\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?)", repeats = True),
+                      SM(r"\s*Beta virt. eigenvalues --\s+(?P<x_gaussian_beta_vir_eigenvalues_values>-?[^\s.-]+\s+|(\-?\d*\.\d*)\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?)", repeats = True),
                       SM(r"\s*- Condensed to atoms (all electrons)"),
                       ]
              ),
@@ -341,7 +342,7 @@ mainFileDescription = SM(
                 forwardMatch = True,
                 subMatchers = [
                       SM(r"\s*Force constants in Cartesian coordinates"),
-                      SM(r"\s*[0-9]+\s*(?P<x_gaussian_force_constants>(\-?\d+\.\d*[-+D0-9]+)\s*(\-?\d+\.\d*[-+D0-9]+)?\s*(\-?\d+\.\d*[-+D0-9]+)?\s*(\-?\d+\.\d*[-+D0-9]+)?\s*(\-?\d+\.\d*[-+D0-9]+)?)", repeats = True),
+                      SM(r"\s*[0-9]+\s*(?P<x_gaussian_force_constants>(-?\d*\.\d*D?\+?\-?\d+)|(\-?\d*\.\d*[-+DE0-9]+)\s*(\-?\d*\.\d*[-+DE0-9]+)?\s*(\-?\d*\.\d*[-+DE0-9]+)?\s*(\-?\d*\.\d*[-+DE0-9]+)?\s*(\-?\d*\.\d*[-+DE0-9]+)?)", repeats = True),
                       SM(r"\s*Force constants in internal coordinates")
                       ]
              ),
@@ -544,7 +545,10 @@ class GaussianParserContext(object):
       def onClose_section_eigenvalues(self, backend, gIndex, section):
           eigenenergies = str(section["x_gaussian_alpha_occ_eigenvalues_values"])
           eigenen1 = []
-          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
+          if('*' in eigenenergies):
+             energy = [0.0]
+          else:
+             energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
           eigenen1 = np.append(eigenen1, energy)
           if(section["x_gaussian_beta_occ_eigenvalues_values"]):
              occoccupationsalp = np.ones(len(eigenen1), dtype=float)
@@ -553,10 +557,13 @@ class GaussianParserContext(object):
 
           eigenenergies = str(section["x_gaussian_alpha_vir_eigenvalues_values"])
           eigenen2 = []
-          energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
+          if('*' in eigenenergies):
+             energy = [0.0]
+          else:
+             energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
           eigenen2 = np.append(eigenen2, energy)
           viroccupationsalp = np.zeros(len(eigenen2), dtype=float)
-          eigenenconalp = np.zeros(len(eigenen1) + len(eigenen2))
+          leneigenenconalp = len(eigenen1) + len(eigenen2)
           eigenenconalp = np.concatenate((eigenen1,eigenen2), axis=0)
           eigenenconalp = convert_unit(eigenenconalp, "hartree", "J")
           occupconalp = np.concatenate((occoccupationsalp, viroccupationsalp), axis=0)
@@ -571,22 +578,34 @@ class GaussianParserContext(object):
           if(section["x_gaussian_beta_occ_eigenvalues_values"]):
              eigenenergies = str(section["x_gaussian_beta_occ_eigenvalues_values"])
              eigenen1 = []
-             energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
+             if('*' in eigenenergies):
+                energy = [0.0]
+             else:
+                energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
              eigenen1 = np.append(eigenen1, energy)
              occoccupationsbet = np.ones(len(eigenen1), dtype=float)
              eigenenergies = str(section["x_gaussian_beta_vir_eigenvalues_values"])
              eigenen2 = []
-             energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
+             if('*' in eigenenergies):
+                energy = [0.0]
+             else:
+                energy = [float(f) for f in eigenenergies[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace(" ."," 0.").replace(" -."," -0.").replace("\\n","").replace("-"," -").split()]
              eigenen2 = np.append(eigenen2, energy)
              viroccupationsbet = np.zeros(len(eigenen2), dtype=float)
-             eigenenconbet = np.zeros(len(eigenen1) + len(eigenen2))
+             leneigenenconbet = len(eigenen1) + len(eigenen2)
              eigenenconbet = np.concatenate((eigenen1,eigenen2), axis=0)
              eigenenconbet = convert_unit(eigenenconbet, "hartree", "J")
              occupconbet = np.concatenate((occoccupationsbet, viroccupationsbet), axis=0)
-             eigenenall = np.concatenate((eigenenconalp,eigenenconbet), axis=0)
-             occupall = np.concatenate((occupconalp,occupconbet), axis=0)
-             eigenenall = np.reshape(eigenenall,(2, 1, len(eigenenconalp)))
-             occupall = np.reshape(occupall,(2, 1, len(occupconalp)))
+             if(leneigenenconalp >= leneigenenconbet):
+                 eigenenall = np.zeros(2*leneigenenconalp)
+                 occupall = np.zeros(2*leneigenenconalp)
+             else:
+                 eigenenall = np.zeros(2*leneigenenconbet)
+                 occupall = np.zeros(2*leneigenenconbet)
+             eigenenall[:len(eigenenconalp) + len(eigenenconbet)] = np.concatenate((eigenenconalp,eigenenconbet), axis=0)
+             occupall[:len(occupconalp) + len(occupconbet)] = np.concatenate((occupconalp,occupconbet), axis=0)
+             eigenenall = np.reshape(eigenenall,(2, 1, max(len(eigenenconalp),len(eigenenconbet))))
+             occupall = np.reshape(occupall,(2, 1, max(len(occupconalp),len(occupconbet))))
              backend.addArrayValues("eigenvalues_values", eigenenall)
              backend.addArrayValues("eigenvalues_occupation", occupall)
 
@@ -1016,6 +1035,7 @@ class GaussianParserContext(object):
               'OLDSDD':      [{'name': 'OldSDD'}], 
               'SDDALL':      [{'name': 'SDDAll'}],
               'GEN':         [{'name': 'General'}],
+              'GENECP':      [{'name': 'General ECP'}],
               'CHKBAS':      [{'name': 'CHKBAS'}],
               'EXTRABASIS':  [{'name': 'ExtraBasis'}],
               'DGA1':        [{'name': 'DGA1'}],
@@ -1172,7 +1192,13 @@ class GaussianParserContext(object):
                        if z in basissetDict.keys():
                          basisset = z
                     basissetWrite = True
-                    basissetreal = rest2.split('/')[1] + '/' + basisset
+                    if (len(rest2.split('/')) == 2): 
+                       if(basisset is not None):
+                          basissetreal = rest2.split('/')[1] + '/' + basisset
+                       else:
+                          basissetreal = rest2.split('/')[1]
+                    else:
+                       pass
           else:
                method1 = settings.split()
                for x in method1: 
@@ -1357,7 +1383,10 @@ class GaussianParserContext(object):
 
           hybrid_xc_coeffsa = ()
           hybrid_xc_coeffsb = ()
-          hybrid_xc_coeffsa = float(str(section['hybrid_xc_coeff1']).replace("[","").replace("]",""))
+          if(str(section['hybrid_xc_coeff1']) != 'None'):
+             hybrid_xc_coeffsa = float(str(section['hybrid_xc_coeff1']).replace("[","").replace("]",""))
+          else:
+             hybrid_xc_coeffsa = 0.0
           backend.addValue('x_gaussian_hybrid_xc_hfx', hybrid_xc_coeffsa)
           hybrid_xc_coeffs = str(section['hybrid_xc_coeff2'])
           hybrid_xc_coeffsb = [float(f) for f in hybrid_xc_coeffs[1:].replace("'","").replace("]","").replace("]","").split()]
@@ -1375,7 +1404,8 @@ class GaussianParserContext(object):
                   uci = uci.split() 
                   for i in range(len(uci)):
                     uci[i] = str(uci[i]).replace("[","").replace("'","").replace("]","").replace("\"","").replace(",","")
-                    uci[i] = float(uci[i])
+                    if uci[i] is not None:
+                       uci[i] = float(uci[i])
                   if uci is not None:
                      uci = convert_unit(uci, "angstrom", "m")
                      unit_cell.append(uci)
