@@ -133,7 +133,7 @@ mainFileDescription = SM(
                      SM(r"\s*NFock=\s*[0-9]+\s*Conv=(?P<x_gaussian_energy_error__hartree>[-+0-9EeDd.]+)\s*"),
                      SM(r"\s*KE=\s*(?P<x_gaussian_electronic_kinetic_energy__hartree>[-+0-9EeDd.]+)\s*"),
                      SM(r"\s*Annihilation of the first spin contaminant"),
-                     SM(r"\s*[A-Z][*][*][0-9]\s*before annihilation\s*(?P<spin_S2>[0-9.]+),\s*after\s*(?P<x_gaussian_after_annihilation_spin_S2>[0-9.]+)"),
+                     SM(r"\s*[A-Z][*][*][0-9]\s*before annihilation\s*(?P<spin_s2>[0-9.]+),\s*after\s*(?P<x_gaussian_after_annihilation_spin_s2>[0-9.]+)"),
                      SM(r"\s*[()A-Z0-9]+\s*=\s*[-+0-9D.]+\s*[()A-Z0-9]+\s*=\s*(?P<x_gaussian_perturbation_energy__hartree>[-+0-9D.]+)"),
                     ]
                 ),
@@ -343,7 +343,7 @@ mainFileDescription = SM(
                 subMatchers = [
                       SM(r"\s*Temperature\s*(?P<x_gaussian_temperature>[0-9.]+)\s*Kelvin.\s*Pressure\s*(?P<x_gaussian_pressure__atmosphere>[0-9.]+)\s*Atm."),
                       SM(r"\s*Principal axes and moments of inertia in atomic units:"),
-                      SM(r"\s*Eigenvalues --\s*(?P<x_gaussian_moment_of_inertia_X__amu_angstrom_angstrom>(\d+\.\d{5}))\s*?(?P<x_gaussian_moment_of_inertia_Y__amu_angstrom_angstrom>(\d+\.\d{5}))\s*?(?P<x_gaussian_moment_of_inertia_Z__amu_angstrom_angstrom>(\d+\.\d{5}))"),
+                      SM(r"\s*Eigenvalues --\s*(?P<x_gaussian_moment_of_inertia_x__amu_angstrom_angstrom>(\d+\.\d{5}))\s*?(?P<x_gaussian_moment_of_inertia_y__amu_angstrom_angstrom>(\d+\.\d{5}))\s*?(?P<x_gaussian_moment_of_inertia_z__amu_angstrom_angstrom>(\d+\.\d{5}))"),
                       SM(r"\s*Zero-point correction=\s*(?P<x_gaussian_zero_point_energy__hartree>[0-9.]+)"),
                       SM(r"\s*Thermal correction to Energy=\s*(?P<x_gaussian_thermal_correction_energy__hartree>[0-9.]+)"),
                       SM(r"\s*Thermal correction to Enthalpy=\s*(?P<x_gaussian_thermal_correction_enthalpy__hartree>[0-9.]+)"),
@@ -474,8 +474,8 @@ class GaussianParserContext(object):
           backend.addValue("sampling_method", sampling_method)
           backend.closeSection("section_sampling_method", samplingGIndex)
           frameSequenceGIndex = backend.openSection("section_frame_sequence")
-          backend.addValue("frame_sequence_to_sampling_ref", samplingGIndex)
-          backend.addArrayValues("frame_sequence_local_frames_ref", np.asarray(self.singleConfCalcs))
+          backend.addValue("frame_sequence_to_sampling_method_ref", samplingGIndex)
+          backend.addArrayValues("frame_sequence_to_frames_ref", np.asarray(self.singleConfCalcs))
           backend.closeSection("section_frame_sequence", frameSequenceGIndex)
           # reset all variables
           self.initialize_values()
@@ -510,7 +510,10 @@ class GaussianParserContext(object):
            atom_forces[i,0] = xForce[i]
            atom_forces[i,1] = yForce[i]
            atom_forces[i,2] = zForce[i]
-        backend.addArrayValues("atom_forces_raw", atom_forces)
+        fId = backend.openSection('section_atom_forces')
+        backend.addValue('atom_forces_constraints', 'raw')
+        backend.addArrayValues("atom_forces", atom_forces)
+        backend.closeSection('section_atom_forces', fId)
 
       def onOpen_section_single_configuration_calculation(self, backend, gIndex, section):
           self.singleConfCalcs.append(gIndex)
@@ -526,7 +529,7 @@ class GaussianParserContext(object):
         # start with -1 since zeroth iteration is the initialization
         self.scfIterNr = -1
         # write the references to section_method and section_system
-        backend.addValue('single_configuration_to_calculation_method_ref', self.secMethodIndex)
+        backend.addValue('single_configuration_calculation_to_method_ref', self.secMethodIndex)
         backend.addValue('single_configuration_calculation_to_system_ref', self.secSystemDescriptionIndex)
 
       def onClose_x_gaussian_section_geometry_optimization_info(self, backend, gIndex, section):
@@ -1325,11 +1328,11 @@ class GaussianParserContext(object):
                       for xcItem in xcList:
                           xcName = xcItem.get('name')
                           if xcName is not None:
-                          # write section and XC_functional_name
-                              gIndexTmp = backend.openSection('section_XC_functionals')
-                              backend.addValue('XC_functional_name', xcName)
-                              # write hybrid_xc_coeff for PBE1PBE into XC_functional_parameters
-                              backend.closeSection('section_XC_functionals', gIndexTmp)
+                          # write section and xc_functional_name
+                              gIndexTmp = backend.openSection('section_xc_functionals')
+                              backend.addValue('xc_functional_name', xcName)
+                              # write hybrid_xc_coeff for PBE1PBE into xc_functional_parameters
+                              backend.closeSection('section_xc_functionals', gIndexTmp)
                           else:
                               logger.error("The dictionary for xc functional '%s' does not have the key 'name'. Please correct the dictionary xcDict in %s." % (xc[-1], os.path.basename(__file__)))
                   else:
@@ -1531,7 +1534,7 @@ cachingLevelForMetaName = {
         "section_method": CachingLevel.Forward,
         "x_gaussian_section_elstruc_method": CachingLevel.Forward,
         "x_gaussian_electronic_structure_method": CachingLevel.ForwardAndCache,
-        "XC_functional_name": CachingLevel.ForwardAndCache, 
+        "xc_functional_name": CachingLevel.ForwardAndCache, 
         "basis_set_atom_centered_short_name": CachingLevel.Forward,
         "x_gaussian_settings": CachingLevel.Cache,
         "x_gaussian_settings_corrected": CachingLevel.ForwardAndCache,
