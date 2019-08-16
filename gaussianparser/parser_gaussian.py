@@ -431,7 +431,7 @@ class GaussianParserContext(object):
         when the parsing starts and when a section_run closes.
         """
         self.secMethodIndex = None
-        self.secSystemDescriptionIndex = 0
+        self.secSystemDescriptionIndex = -1
         # start with -1 since zeroth iteration is the initialization
         self.scfIterNr = -1
         self.singleConfCalcs = []
@@ -448,6 +448,9 @@ class GaussianParserContext(object):
         self.metaInfoEnv = self.parser.parserBuilder.metaInfoEnv
         # allows to reset values if the same superContext is used to parse different files
         self.initialize_values()
+
+      def onOpen_section_system(self, backend, gIndex, section):
+         self.secSystemDescriptionIndex = gIndex
 
       def onClose_section_run(self, backend, gIndex, section):
           """Trigger called when section_run is closed.
@@ -494,17 +497,9 @@ class GaussianParserContext(object):
             atom_numbers[i] = numbers[i]
             atomic_symbols[i] = ase.data.chemical_symbols[atom_numbers[i]]
 
-         if self.secSystemDescriptionIndex > 0:
-            self.secSystemDescriptionIndex = backend.openSection("section_system")
-
          backend.addArrayValues("atom_labels", atomic_symbols, self.secSystemDescriptionIndex)
          backend.addArrayValues("atom_positions", atom_coords, self.secSystemDescriptionIndex)
          backend.addValue("x_gaussian_number_of_atoms",len(atomic_symbols), self.secSystemDescriptionIndex)
-
-         if self.secSystemDescriptionIndex > 0:
-            backend.closeSection("section_system", self.secSystemDescriptionIndex)
-         else:
-            self.secSystemDescriptionIndex = 1
 
       def onClose_x_gaussian_section_atom_forces(self, backend, gIndex, section):
         xForce = section["x_gaussian_atom_x_force"]
