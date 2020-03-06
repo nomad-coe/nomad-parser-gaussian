@@ -546,6 +546,7 @@ class GaussianParserContext(object):
            if section['x_gaussian_energy_scf']:
                self.scfenergyconverged = float(str(section['x_gaussian_energy_scf']).replace("[","").replace("]","").replace("D","E"))
                self.scfcharacter = section['x_gaussian_hf_detect']
+               # print("## scfcharacter:", self.scfcharacter)  # TMK:
                if (self.scfcharacter != ['RHF'] and self.scfcharacter != ['ROHF'] and self.scfcharacter != ['UHF']):
                   self.energytotal = self.scfenergyconverged
                   backend.addValue('energy_total', self.energytotal)
@@ -844,6 +845,7 @@ class GaussianParserContext(object):
               'XA':         [{'name': 'LDA_X_EMPIRICAL'}],
               'VWN':        [{'name': 'LDA_C_VWN'}],
               'VWN3':       [{'name': 'LDA_C_VWN_3'}],
+              'SVWN':       [{'name': 'LDA_X'}, {'name': 'LDA_C_VWN'}],
               'LSDA':       [{'name': 'LDA_X'}, {'name': 'LDA_C_VWN'}],
               'B':          [{'name': 'GGA_X_B88'}],
               'BLYP':       [{'name': 'GGA_C_LYP'}, {'name': 'GGA_X_B88'}],
@@ -897,9 +899,13 @@ class GaussianParserContext(object):
               'BHANDHLYP':  [{'name': 'HYB_GGA_XC_BHANDHLYP'}],
               'APF':        [{'name': 'HYB_GGA_XC_APF'}],
               'APFD':       [{'name': 'HYB_GGA_XC_APFD'}],
+              'HF' :        [{'name': 'HF_HF_X'}],
               'RHF':        [{'name': 'HF_RHF_X'}],
               'UHF':        [{'name': 'HF_UHF_X'}],
               'ROHF':       [{'name': 'HF_ROHF_X'}],
+              'CCD':        [{'name': 'HF_CCD'}],
+              'CCSD':       [{'name': 'HF_CCSD'}],
+              'CCSD(T)':    [{'name': 'HF_CCSD(T)'}],
               'OHSE2PBE':   [{'name': 'HYB_GGA_XC_HSE03'}],
               'HSEH1PBE':   [{'name': 'HYB_GGA_XC_HSE06'}],
               'OHSE1PBE':   [{'name': 'HYB_GGA_XC_HSEOLD'}],
@@ -911,6 +917,11 @@ class GaussianParserContext(object):
               'M062X':      [{'name': 'HYB_MGGA_X_M06_2X'}, {'name': 'MGGA_C_M06_2X'}],
               'M06HF':      [{'name': 'HYB_MGGA_X_M06_HF'}, {'name': 'MGGA_C_M06_HF'}],
               'M11':        [{'name': 'HYB_MGGA_X_M11'}, {'name': 'MGGA_C_M11'}],
+              'MP2':        [{'name': 'HF_MP2'}],
+              'MP3':        [{'name': 'HF_MP3'}],
+              'MP4(DQ)':    [{'name': 'HF_MP4(DQ)'}],
+              'MP4(SDQ)':   [{'name': 'HF_MP4(SDQ)'}],
+              'MP5':        [{'name': 'HF_MP5'}],
               'SOGGA11X':   [{'name': 'HYB_GGA_X_SOGGA11_X'}, {'name': 'HYB_GGA_X_SOGGA11_X'}],
               'MN12SX':     [{'name': 'HYB_MGGA_X_MN12_SX'}, {'name': 'MGGA_C_MN12_SX'}],
               'N12SX':      [{'name': 'HYB_GGA_X_N12_SX'}, {'name': 'GGA_C_N12_SX'}],
@@ -1087,9 +1098,13 @@ class GaussianParserContext(object):
         method1 = method1.upper()
 
         if 'ONIOM' not in method1:
+          # print("\n\n## settings: ", settings)  # DEBUG:
           if settings.find("/") >= 0:
+               # print("\n\n## Found slash / in settings") # DEBUG:
                method1 = settings.split('/')[0].replace("['#p ","").replace("['#P ","").replace("['#","")
                method1 = method1.upper()
+               # print("\n\n## method1: {}" .format(method1)) # DEBUG:
+               # print("\n\n## x_gaussian_hf_detect" , section['x_gaussian_hf_detect']) # # DEBUG:
                for x in method1.split():
                   method2 = str(x)
                   if method2 != 'RHF' and method2 != 'UHF' and method2 != 'ROHF' and method2 != 'UFF':
@@ -1130,10 +1145,12 @@ class GaussianParserContext(object):
                      xcWrite= True
                      methodWrite = True
                      method = 'DFT'
+                     # print("##xc=", xc)                # tmk:
                   if method2 in methodDict.keys():
                      method = method2
                      methodWrite = True
                      methodreal = method2
+                     # print("## method, methodreal: ", method, methodreal)  # tmk:
                   else:
                      for n in range(2,9):
                         if method2[0:n] in methodDict.keys():
@@ -1212,7 +1229,19 @@ class GaussianParserContext(object):
                     else:
                        pass
           else:
+               # print("\n\nNO slash / found in settings") # DEBUG:
                method1 = settings.split()
+               #
+               method1 = settings.upper()
+               method1 = method1.replace("['#p ","").replace("['#P ","").replace("['#","").replace("']","")
+               method1 = method1.split()
+
+               #print("## method1: ", type(method1))
+               #print("## methodX: ", type(methodX))
+               #print("## methodX: ", methodX)
+               #for w in methodX:
+               #   print("## w", w)
+               #
                for x in method1:
                   method2 = str(x)
                   method2 = method2.upper()
@@ -1252,10 +1281,13 @@ class GaussianParserContext(object):
                    xc = method2
                    xcWrite= True
                    method = 'DFT'
+                  # print("## method2: vs keys ", method2)
                   if method2 in methodDict.keys():
+                     ####
                    method = method2
                    methodWrite = True
                    methodreal = method2
+                   # print("## method, methodreal: ", method, methodreal)  # tmk:
                   else:
                    for n in range(2,9):
                       if method2[0:n] in methodDict.keys():
@@ -1308,6 +1340,9 @@ class GaussianParserContext(object):
                 methodreal = method2
 
 # functionals where hybrid_xc_coeff are written
+        # print("\n## xc: {}\n" .format(xc))
+        # print("\n## x_gaussian_hf_detect_2" , section['x_gaussian_hf_detect']) # # DEBUG:
+        # print("## scfcharacter:", scfcharacter) not exist
 
         if xc is not None:
           # check if only one xc keyword was found in output
