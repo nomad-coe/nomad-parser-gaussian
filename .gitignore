@@ -52,3 +52,5 @@ TAGS
 
 lib/
 env/
+
+gaussianparser.egg-info/
