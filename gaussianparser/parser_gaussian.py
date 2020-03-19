@@ -26,7 +26,7 @@ import numpy as np
 import ase
 import re
 
-tmk_debug = True
+tmk_debug = False
 ############################################################
 # This is the parser for the output file of Gaussian.
 ############################################################
