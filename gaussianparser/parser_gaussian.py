@@ -26,7 +26,7 @@ import numpy as np
 import ase
 import re
 
-tmk_debug = False
+tmk_debug = True
 ############################################################
 # This is the parser for the output file of Gaussian.
 ############################################################
@@ -931,6 +931,22 @@ class GaussianParserContext(object):
               'MP4(SDQ)':   [{'name': 'HF_MP4(SDQ)'}],
               'MP4(SDTQ)':  [{'name': 'HF_MP4SDTQ'}],
               'MP5':        [{'name': 'HF_MP5'}],
+              'AM1':        [{'name': 'HYB_AM1'}],
+              'PM3':        [{'name': 'HYB_PM3'}],
+              'PM3MM':      [{'name': 'HYB_PM3MM'}],
+              'PM3D3':      [{'name': 'HYB_PM3D3'}],
+              'PM6':        [{'name': 'HYB_PM6'}],
+              'PM7':        [{'name': 'HYB_PM7'}],
+              'PM7R6':      [{'name': 'HYB_PM7R6'}],
+              'PM7MOPAC':   [{'name': 'HYB_PM7MOPAC'}],
+              'CBS-4':      [{'name': 'HYB_CBS-4'}],
+              'CBS-4M':     [{'name': 'HYB_CBS-4M'}],
+              'CBS-4O':     [{'name': 'HYB_CBS-4O'}],
+              'CBS-APNO':   [{'name': 'HYB_CBS-APNO'}],
+              'CBS-Q':      [{'name': 'HYB_CBS-Q'}],
+              'CBS-QB3':    [{'name': 'HYB_CBS-QB3'}],
+              'CBS-QB3O':   [{'name': 'HYB_CBS-QB3O'}],
+              'ROCBS-QB3':  [{'name': 'HYB_ROCBS-QB3'}],
               'SOGGA11X':   [{'name': 'HYB_GGA_X_SOGGA11_X'}, {'name': 'HYB_GGA_X_SOGGA11_X'}],
               'MN12SX':     [{'name': 'HYB_MGGA_X_MN12_SX'}, {'name': 'MGGA_C_MN12_SX'}],
               'N12SX':      [{'name': 'HYB_GGA_X_N12_SX'}, {'name': 'GGA_C_N12_SX'}],
@@ -967,6 +983,9 @@ class GaussianParserContext(object):
               'PM3MM':     [{'name': 'PM3MM'}],
               'PM3D3':     [{'name': 'PM3D3'}],
               'PM6':       [{'name': 'PM6'}],
+              'PM7':       [{'name': 'PM7'}],
+              'PM7R6':     [{'name': 'PM7R6'}],
+              'PM7MOPAC':  [{'name': 'PM7MOPAC'}],
               'PDDG':      [{'name': 'PDDG'}],
               'CNDO':      [{'name': 'CNDO'}],
               'INDO':      [{'name': 'INDO'}],
@@ -1016,13 +1035,16 @@ class GaussianParserContext(object):
               'G3MP2B3':   [{'name': 'G3MP2B3'}],
               'G4':        [{'name': 'G4'}],
               'G4MP2':     [{'name': 'G4MP2'}],
-              'CBSEXTRAP':   [{'name': 'CBSExtrapolate'}],
-              'CBSEXTRAPOLATE':   [{'name': 'CBSExtrapolate'}],
+              'CBS-4':     [{'name': 'CBS-4'}],
               'CBS-4M':    [{'name': 'CBS-4M'}],
               'CBS-4O':    [{'name': 'CBS-4O'}],
+              'CBS-APNO':  [{'name': 'CBS-APNO'}],
+              'CBS-Q':     [{'name': 'CBS-Q'}],
               'CBS-QB3':   [{'name': 'CBS-QB3'}],
               'CBS-QB3O':  [{'name': 'CBS-QB3O'}],
-              'CBS-APNO':  [{'name': 'CBS-APNO'}],
+              'CBSEXTRAP':   [{'name': 'CBSExtrapolate'}],
+              'CBSEXTRAPOLATE':   [{'name': 'CBSExtrapolate'}],
+              'ROCBS-QB3': [{'name': 'ROCBS-QB3'}],
               'W1U':       [{'name': 'W1U'}],
               'W1BD':      [{'name': 'W1BD'}],
               'W1RO':      [{'name': 'W1RO'}],
