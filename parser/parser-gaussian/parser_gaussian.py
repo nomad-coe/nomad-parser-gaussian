@@ -1,11 +1,11 @@
 # Copyright 2015-2018 Rosendo Valero, Fawzi Mohamed, Ankit Kariryaa
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,7 +37,7 @@ logger = logging.getLogger("nomad.GaussianParser")
 mainFileDescription = SM(
     name = 'root',
     weak = True,
-    forwardMatch = True, 
+    forwardMatch = True,
     startReStr = "",
     subMatchers = [
         SM(name = 'newRun',
@@ -220,7 +220,7 @@ mainFileDescription = SM(
                      ]
                     )
                    ]
-               ),  
+               ),
                   SM(name = 'CASSCFStates',
                    sections = ['x_gaussian_section_casscf'],
                    startReStr = r"\s*EIGENVALUES AND\s*",
@@ -247,7 +247,7 @@ mainFileDescription = SM(
                 startReStr = r"\s+Population analysis",
                 subFlags = SM.SubFlags.Sequenced,
                 subMatchers = [
-                      SM(r"\s*Orbital symmetries"), 
+                      SM(r"\s*Orbital symmetries"),
                       SM(r"\s*Alpha Orbitals"),
                       SM(r"\s*Occupied\s+(?P<x_gaussian_alpha_occ_symmetry_values>\((.+)\))?"),
                       SM(r"\s+(?P<x_gaussian_alpha_occ_symmetry_values>\((.+)\)?)", repeats = True),
@@ -274,7 +274,7 @@ mainFileDescription = SM(
                 forwardMatch = True,
                 subFlags = SM.SubFlags.Sequenced,
                 subMatchers = [
-                      SM(r"\s*Alpha  occ. eigenvalues --\s+(?P<x_gaussian_alpha_occ_eigenvalues_values>-?[^\s.-]+\s+|(\-?\d*\.\d*)\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?)", repeats = True), 
+                      SM(r"\s*Alpha  occ. eigenvalues --\s+(?P<x_gaussian_alpha_occ_eigenvalues_values>-?[^\s.-]+\s+|(\-?\d*\.\d*)\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?)", repeats = True),
                       SM(r"\s*Alpha virt. eigenvalues --\s+(?P<x_gaussian_alpha_vir_eigenvalues_values>-?[^\s.-]+\s+|(\-?\d*\.\d*)\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?)", repeats = True),
                       SM(r"\s*Beta  occ. eigenvalues --\s+(?P<x_gaussian_beta_occ_eigenvalues_values>-?[^\s.-]+\s+|(\-?\d*\.\d*)\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?)", repeats = True),
                       SM(r"\s*Beta virt. eigenvalues --\s+(?P<x_gaussian_beta_vir_eigenvalues_values>-?[^\s.-]+\s+|(\-?\d*\.\d*)\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?\s+(\-?\d*\.\d*)?)", repeats = True),
@@ -297,10 +297,10 @@ mainFileDescription = SM(
                   forwardMatch = False,
                   subMatchers = [
                       SM(r"\s*Charge=(?P<charge>\s*[-0-9.]+)"),
-                      SM(r"\s*Dipole moment "), 
+                      SM(r"\s*Dipole moment "),
                       SM(r"\s+\w+=\s+(?P<dipole_moment_x>[-+0-9EeDd.]+)\s+\w+=\s+(?P<dipole_moment_y>[-+0-9EeDd.]+)\s+\w+=\s+(?P<dipole_moment_z>[-+0-9EeDd.]+)"),
-                      SM(r"\s*Quadrupole moment"), 
-                      SM(r"\s+\w+=\s+(?P<quadrupole_moment_xx>[0-9-.]+)\s+\w+=\s+(?P<quadrupole_moment_yy>[0-9-.]+)\s+\w+=\s+(?P<quadrupole_moment_zz>[0-9-.]+)"), 
+                      SM(r"\s*Quadrupole moment"),
+                      SM(r"\s+\w+=\s+(?P<quadrupole_moment_xx>[0-9-.]+)\s+\w+=\s+(?P<quadrupole_moment_yy>[0-9-.]+)\s+\w+=\s+(?P<quadrupole_moment_zz>[0-9-.]+)"),
                       SM(r"\s+\w+=\s+(?P<quadrupole_moment_xy>[0-9-.]+)\s+\w+=\s+(?P<quadrupole_moment_xz>[0-9-.]+)\s+\w+=\s+(?P<quadrupole_moment_yz>[0-9-.]+)"),
                       SM(r"\s*Traceless Quadrupole moment"),
                       SM(r"\s+\w+=\s+[0-9-.]+\s+\w+=\s+[0-9-.]+\s+\w+=\s+[0-9-.]+"),
@@ -315,7 +315,7 @@ mainFileDescription = SM(
                       SM(r"\s+\w+=\s+(?P<hexadecapole_moment_zzzy>[-+0-9EeDd.]+)\s+\w+=\s+(?P<hexadecapole_moment_xxyy>[-+0-9EeDd.]+)\s+\w+=\s+(?P<hexadecapole_moment_xxzz>[-+0-9EeDd.]+)\s+\w+=\s+(?P<hexadecapole_moment_yyzz>[-+0-9EeDd.]+)"),
                       SM(r"\s+\w+=\s+(?P<hexadecapole_moment_xxyz>[-+0-9EeDd.]+)\s+\w+=\s+(?P<hexadecapole_moment_yyxz>[-+0-9EeDd.]+)\s+\w+=\s+(?P<hexadecapole_moment_zzxy>[-+0-9EeDd.]+)")
                       ]
-             ),    
+             ),
                 SM (name = 'Frequencies',
                      sections = ['x_gaussian_section_frequencies'],
                      startReStr = r"\s*Frequencies --\s+(?:(?:[-]?[0-9]+\.\d*)\s*(?:[-]?[-0-9]+\.\d*)?\s*(?:[-]?[-0-9]+\.\d*)?)",
@@ -347,9 +347,9 @@ mainFileDescription = SM(
                       SM(r"\s*Zero-point correction=\s*(?P<x_gaussian_zero_point_energy__hartree>[0-9.]+)"),
                       SM(r"\s*Thermal correction to Energy=\s*(?P<x_gaussian_thermal_correction_energy__hartree>[0-9.]+)"),
                       SM(r"\s*Thermal correction to Enthalpy=\s*(?P<x_gaussian_thermal_correction_enthalpy__hartree>[0-9.]+)"),
-                      SM(r"\s*Thermal correction to Gibbs Free Energy=\s*(?P<x_gaussian_thermal_correction_free_energy__hartree>[0-9.]+)"), 
+                      SM(r"\s*Thermal correction to Gibbs Free Energy=\s*(?P<x_gaussian_thermal_correction_free_energy__hartree>[0-9.]+)"),
                       ]
-             ),       
+             ),
                 SM(name = 'Forceconstantmatrix',
                 sections = ['x_gaussian_section_force_constant_matrix'],
                 startReStr = r"\s*Force constants in Cartesian coordinates",
@@ -632,12 +632,12 @@ class GaussianParserContext(object):
 
           symmetry = [str(f) for f in symoccalpha[1:].replace(",","").replace("(","").replace(")","").replace("]","").replace("'A","A").replace("\\'","'").replace("A''","A'").replace("'E","E").replace("G'","G").replace("\"A'\"","A'").split()]
           sym1 = []
-          sym1 = np.append(sym1, symmetry)  
+          sym1 = np.append(sym1, symmetry)
           symmetry = [str(f) for f in symviralpha[1:].replace(",","").replace("(","").replace(")","").replace("]","").replace("'A","A").replace("\\'","'").replace("A''","A'").replace("\"A'\"","A'").replace("'E","E").replace("G'","G").split()]
           sym2 = []
           sym2 = np.append(sym2, symmetry)
           symmetrycon = np.concatenate((sym1, sym2), axis=0)
-          backend.addArrayValues("x_gaussian_alpha_symmetries", symmetrycon) 
+          backend.addArrayValues("x_gaussian_alpha_symmetries", symmetrycon)
 
           if(section["x_gaussian_beta_occ_symmetry_values"]):
              symmetry = [str(f) for f in symoccbeta[1:].replace(",","").replace("(","").replace(")","").replace("]","").replace("'A","A").replace("\\'","'").replace("A''","A'").replace("\"A'\"","A'").replace("'E","E").replace("G'","G").split()]
@@ -677,7 +677,7 @@ class GaussianParserContext(object):
             quadyz = section["quadrupole_moment_yz"]
             quadzz = section["quadrupole_moment_zz"]
             quad = str([quadxx, quadxy, quadyy, quadxz, quadyz, quadzz])
-            quadrupoles = [float(f) for f in quad[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()] 
+            quadrupoles = [float(f) for f in quad[1:].replace("-."," -0.").replace("'."," 0.").replace("'","").replace("[","").replace("]","").replace(",","").split()]
             quadrupoles = convert_unit(quadrupoles, "debye * angstrom", "coulomb * meter**2")
 
           if(section["octapole_moment_xxx"]):
@@ -719,7 +719,7 @@ class GaussianParserContext(object):
           if(section["quadrupole_moment_xx"]):
              multipoles = np.hstack((charge, dipoles, quadrupoles, octapoles, hexadecapoles))
           else:
-             multipoles = np.hstack((charge, dipoles)) 
+             multipoles = np.hstack((charge, dipoles))
 
           x_gaussian_molecular_multipole_values = np.resize(multipoles, (x_gaussian_number_of_lm_molecular_multipoles))
 
@@ -746,12 +746,12 @@ class GaussianParserContext(object):
           disps = [float(s) for s in vibdisps[1:].replace("'","").replace(",","").replace("]","").replace("one","").replace("\\n","").replace(" ."," 0.").replace(" -."," -0.").split()]
           dispsnew = np.zeros(len(disps), dtype = float)
 
-#  Reorder disps 
+#  Reorder disps
 
           if len(vibfreqs) % 3 == 0:
              k = 0
              for p in range(0,len(vibfreqs) // 3):
-                M = int(len(disps)/len(vibfreqs)) * (p+1) 
+                M = int(len(disps)/len(vibfreqs)) * (p+1)
                 for m in range(3):
                   for n in range(M - int(len(disps) / len(vibfreqs)),M,3):
                     for l in range(3):
@@ -782,9 +782,9 @@ class GaussianParserContext(object):
           forceconst = str(section["x_gaussian_force_constants"])
           numbers = [float(s) for s in forceconst[1:].replace("'","").replace(",","").replace("]","").replace("\\n","").replace("D","E").replace(" ."," 0.").replace(" -."," -0.").split()]
           length = len(numbers)
-          dim = int(((1 + 8 * length)**0.5 - 1) / 2) 
+          dim = int(((1 + 8 * length)**0.5 - 1) / 2)
           cartforceconst = np.zeros([dim, dim])
-          forcecnstvalues = np.append(forcecnstvalues, numbers) 
+          forcecnstvalues = np.append(forcecnstvalues, numbers)
           if dim > 6:
              l = 0
              for i in range(0,5):
@@ -795,7 +795,7 @@ class GaussianParserContext(object):
                 for k in range(0,5):
                    l = l + 1
                    cartforceconst[i,k] = forcecnstvalues[l-1]
-             for i in range(5,dim-2): 
+             for i in range(5,dim-2):
                 for k in range(5,i+1):
                    l = l + 1
                    cartforceconst[i,k] = forcecnstvalues[l-1]
@@ -821,14 +821,14 @@ class GaussianParserContext(object):
                 for k in range(i,dim):
                    l = l + 1
                    cartforceconst[i,k] = forcecnstvalues[l-1]
- 
+
           for i in range(0,dim):
              for k in range(i+1,dim):
                  cartforceconst[i,k] = cartforceconst[k,i]
 
-          cartforceconst = convert_unit(cartforceconst, "forceAu / bohr", "J / (meter**2)")
+          cartforceconst = convert_unit(cartforceconst, "hartree / (bohr ** 2)", "J / (meter**2)")
 
-          backend.addArrayValues("x_gaussian_force_constant_values", cartforceconst) 
+          backend.addArrayValues("x_gaussian_force_constant_values", cartforceconst)
 
       def onOpen_section_method(self, backend, gIndex, section):
         # keep track of the latest method section
@@ -844,7 +844,7 @@ class GaussianParserContext(object):
               'XA':	    [{'name': 'X_ALPHA'}],
               'VWN':        [{'name': 'LDA_C_VWN'}],
               'VWN3':       [{'name': 'LDA_C_VWN_3'}],
-              'LSDA':       [{'name': 'LDA_X'}, {'name': 'LDA_C_VWN'}], 
+              'LSDA':       [{'name': 'LDA_X'}, {'name': 'LDA_C_VWN'}],
               'B':          [{'name': 'GGA_X_B88'}],
               'BLYP':       [{'name': 'GGA_C_LYP'}, {'name': 'GGA_X_B88'}],
               'PBEPBE':     [{'name': 'GGA_C_PBE'}, {'name': 'GGA_X_PBE'}],
@@ -877,9 +877,9 @@ class GaussianParserContext(object):
               'V5LYP':      [{'name': 'GGA_C_V5LYP'}],
               'THCTH':      [{'name': 'MGGA_XC_TAU_HCTH'}],
               'TPSSTPSS':   [{'name': 'MGGA_C_TPSS'}, {'name': 'MGGA_X_TPSS'}],
-              'B3LYP':      [{'name': 'HYB_GGA_XC_B3LYP'}], 
+              'B3LYP':      [{'name': 'HYB_GGA_XC_B3LYP'}],
               'B3PW91':     [{'name': 'HYB_GGA_XC_B3PW91'}],
-              'B3P86':      [{'name': 'HYB_GGA_XC_B3P86'}], 
+              'B3P86':      [{'name': 'HYB_GGA_XC_B3P86'}],
               'B1B95':      [{'name': 'HYB_GGA_XC_B1B95'}],
               'MPW1PW91':   [{'name': 'HYB_GGA_XC_MPW1PW91'}],
               'MPW1LYP':    [{'name': 'HYB_GGA_XC_MPW1LYP'}],
@@ -888,7 +888,7 @@ class GaussianParserContext(object):
               'B98':        [{'name': 'HYB_GGA_XC_B98'}],
               'B971':       [{'name': 'HYB_GGA_XC_B971'}],
               'B972':       [{'name': 'HYB_GGA_XC_B972'}],
-              'O3LYP':      [{'name': 'HYB_GGA_XC_O3LYP'}], 
+              'O3LYP':      [{'name': 'HYB_GGA_XC_O3LYP'}],
               'TPSSH':      [{'name': 'HYB_GGA_XC_TPSSh'}],
               'BMK':        [{'name': 'HYB_MGGA_XC_BMK'}],
               'X3LYP':      [{'name': 'HYB_GGA_XC_X3LYP'}],
@@ -925,7 +925,7 @@ class GaussianParserContext(object):
               'MPW2PLYP':   [{'name': 'MPW2PLYP'}],
               'B2PLYPD':    [{'name': 'B2PLYPD'}],
               'MPW2PLYPD':  [{'name': 'MPW2PLYPD'}],
-              'B97D3':      [{'name': 'B97D3'}], 
+              'B97D3':      [{'name': 'B97D3'}],
               'B2PLYPD3':   [{'name': 'B2PLYPD3'}],
               'MPW2PLYPD3': [{'name': 'MPW2PLYPD3'}],
               'LC-':        [{'name': 'LONG-RANGE CORRECTED'}],
@@ -1017,7 +1017,7 @@ class GaussianParserContext(object):
               'SV':          [{'name': 'SV'}],
               'SVP':         [{'name': 'SVP'}],
               'TZV':         [{'name': 'TZV'}],
-              'TZVP':        [{'name': 'TZVP'}],              
+              'TZVP':        [{'name': 'TZVP'}],
               'DEF2SV':      [{'name': 'Def2SV'}],
               'DEF2SVP':     [{'name': 'Def2SVP'}],
               'DEF2SVPP':    [{'name': 'Def2SVPP'}],
@@ -1031,12 +1031,12 @@ class GaussianParserContext(object):
               'MIDIX':       [{'name': 'MidiX'}],
               'EPR-II':      [{'name': 'EPR-II'}],
               'EPR-III':     [{'name': 'EPR-III'}],
-              'UGBS':        [{'name': 'UGBS'}],     
+              'UGBS':        [{'name': 'UGBS'}],
               'MTSMALL':     [{'name': 'MTSmall'}],
               'DGDZVP':      [{'name': 'DGDZVP'}],
               'DGDZVP2':     [{'name': 'DGDZVP2'}],
               'DGTZVP':      [{'name': 'DGTZVP'}],
-              'CBSB3':       [{'name': 'CBSB3'}],  
+              'CBSB3':       [{'name': 'CBSB3'}],
               'CBSB7':       [{'name': 'CBSB7'}],
               'SHC':         [{'name': 'SHC'}],
               'SEC':         [{'name': 'SHC'}],
@@ -1046,7 +1046,7 @@ class GaussianParserContext(object):
               'LANL1':       [{'name': 'LANL1'}],
               'LANL2':       [{'name': 'LANL2'}],
               'SDD':         [{'name': 'SDD'}],
-              'OLDSDD':      [{'name': 'OldSDD'}], 
+              'OLDSDD':      [{'name': 'OldSDD'}],
               'SDDALL':      [{'name': 'SDDAll'}],
               'GEN':         [{'name': 'General'}],
               'GENECP':      [{'name': 'General ECP'}],
@@ -1070,7 +1070,7 @@ class GaussianParserContext(object):
         methodWrite = False
         basissetWrite = False
         methodreal = None
-        basissetreal = None 
+        basissetreal = None
         methodprefix = None
         exc = None
         corr = None
@@ -1088,7 +1088,7 @@ class GaussianParserContext(object):
         method1 = settings.replace("['#p ","").replace("['#P ","").replace("['#","")
         method1 = method1.upper()
 
-        if 'ONIOM' not in method1: 
+        if 'ONIOM' not in method1:
           if settings.find("/") >= 0:
                method1 = settings.split('/')[0].replace("['#p ","").replace("['#P ","").replace("['#","")
                method1 = method1.upper()
@@ -1096,7 +1096,7 @@ class GaussianParserContext(object):
                   method2 = str(x)
                   if method2 != 'RHF' and method2 != 'UHF' and method2 != 'ROHF' and method2 != 'UFF':
                      if (method2[0] == 'R' and method2[0:2] != 'RO') or method2[0] == 'U':
-                        methodprefix = method2[0] 
+                        methodprefix = method2[0]
                         method2 = method2[1:]
                      elif method2[0:2] == 'RO':
                         methodprefix = method2[0:2]
@@ -1130,7 +1130,7 @@ class GaussianParserContext(object):
                   if method2 in xcDict.keys():
                      xc = method2
                      xcWrite= True
-                     methodWrite = True 
+                     methodWrite = True
                      method = 'DFT'
                   if method2 in methodDict.keys():
                      method = method2
@@ -1152,7 +1152,7 @@ class GaussianParserContext(object):
                           methodWrite = True
                           methodreal = method2
                rest = settings.split('/')[1].replace("'","").replace("]","")
-               rest = rest.upper() 
+               rest = rest.upper()
                for x in rest.split():
                   if x in basissetDict.keys():
                      basisset = x
@@ -1206,7 +1206,7 @@ class GaussianParserContext(object):
                        if z in basissetDict.keys():
                          basisset = z
                     basissetWrite = True
-                    if (len(rest2.split('/')) == 2): 
+                    if (len(rest2.split('/')) == 2):
                        if(basisset is not None):
                           basissetreal = rest2.split('/')[1] + '/' + basisset
                        else:
@@ -1215,15 +1215,15 @@ class GaussianParserContext(object):
                        pass
           else:
                method1 = settings.split()
-               for x in method1: 
+               for x in method1:
                   method2 = str(x)
-                  method2 = method2.upper() 
+                  method2 = method2.upper()
                   if method2 != 'RHF' and method2 != 'UHF' and method2 != 'ROHF' and method2 != 'UFF':
                     if (method2[0] == 'R' and method2[0:2] != 'RO') or method2[0] == 'U':
-                      methodprefix = method2[0] 
+                      methodprefix = method2[0]
                       method2 = method2[1:]
                     elif method2[0:2] == 'RO':
-                      methodprefix = method2[0:2] 
+                      methodprefix = method2[0:2]
                       method2 = method2[2:]
                   if method2[0:2] == 'SV' or method2[0] == 'B' or method2[0] == 'O':
                     if method2[0] in xcDict.keys() and method2[1:] in xcDict.keys():
@@ -1250,12 +1250,12 @@ class GaussianParserContext(object):
                    exccorr = method2[3:]
                    if exccorr in xcDict.keys():
                       xc = 'LC-' + xcDict.get([exccorr][-1])
-                  if method2 in xcDict.keys(): 
+                  if method2 in xcDict.keys():
                    xc = method2
                    xcWrite= True
                    method = 'DFT'
                   if method2 in methodDict.keys():
-                   method = method2 
+                   method = method2
                    methodWrite = True
                    methodreal = method2
                   else:
@@ -1300,7 +1300,7 @@ class GaussianParserContext(object):
 
 # special options for ONIOM calculations
         else:
-          method = 'ONIOM'       
+          method = 'ONIOM'
           methodWrite = True
           method1 = settings.split()
           for x in method1:
@@ -1308,7 +1308,7 @@ class GaussianParserContext(object):
              method2 = method2.upper()
              if 'ONIOM' in method2:
                 methodreal = method2
-        
+
 # functionals where hybrid_xc_coeff are written
 
         if xc is not None:
@@ -1415,7 +1415,7 @@ class GaussianParserContext(object):
               unit_cell = []
               for i in ['x', 'y', 'z']:
                   uci = str(section['x_gaussian_geometry_lattice_vector_' + i])
-                  uci = uci.split() 
+                  uci = uci.split()
                   for i in range(len(uci)):
                     uci[i] = str(uci[i]).replace("[","").replace("'","").replace("]","").replace("\"","").replace(",","")
                     if uci[i] is not None:
@@ -1460,11 +1460,11 @@ cachingLevelForMetaName = {
         "x_gaussian_number_of_atoms": CachingLevel.ForwardAndCache,
         "section_scf_iteration": CachingLevel.Forward,
         "energy_total_scf_iteration": CachingLevel.ForwardAndCache,
-        "x_gaussian_delta_energy_total_scf_iteration": CachingLevel.ForwardAndCache, 
+        "x_gaussian_delta_energy_total_scf_iteration": CachingLevel.ForwardAndCache,
         "energy_total": CachingLevel.ForwardAndCache,
         "x_gaussian_energy_error": CachingLevel.ForwardAndCache,
         "x_gaussian_electronic_kinetic_energy": CachingLevel.ForwardAndCache,
-        "x_gaussian_energy_electrostatic": CachingLevel.ForwardAndCache, 
+        "x_gaussian_energy_electrostatic": CachingLevel.ForwardAndCache,
         "x_gaussian_section_frequencies": CachingLevel.Forward,
         "x_gaussian_frequency_values": CachingLevel.Cache,
         "x_gaussian_frequencies": CachingLevel.ForwardAndCache,
@@ -1472,25 +1472,25 @@ cachingLevelForMetaName = {
         "x_gaussian_red_masses": CachingLevel.ForwardAndCache,
         "x_gaussian_normal_modes": CachingLevel.Cache,
         "x_gaussian_normal_mode_values": CachingLevel.ForwardAndCache,
-        "x_gaussian_atomic_masses": CachingLevel.ForwardAndCache, 
+        "x_gaussian_atomic_masses": CachingLevel.ForwardAndCache,
         "x_gaussian_section_force_constant_matrix": CachingLevel.Forward,
         "x_gaussian_force_constant_values": CachingLevel.ForwardAndCache,
         "x_gaussian_force_constants": CachingLevel.Cache,
         "section_eigenvalues": CachingLevel.Forward,
-        "eigenvalues_values": CachingLevel.ForwardAndCache, 
+        "eigenvalues_values": CachingLevel.ForwardAndCache,
         "eigenvalues_occupation": CachingLevel.ForwardAndCache,
         "x_gaussian_section_orbital_symmetries": CachingLevel.Forward,
         "x_gaussian_alpha_occ_symmetry_values":CachingLevel.Cache,
         "x_gaussian_alpha_vir_symmetry_values":CachingLevel.Cache,
         "x_gaussian_beta_occ_symmetry_values":CachingLevel.Cache,
-        "x_gaussian_beta_vir_symmetry_values":CachingLevel.Cache,  
+        "x_gaussian_beta_vir_symmetry_values":CachingLevel.Cache,
         "x_gaussian_alpha_symmetries": CachingLevel.ForwardAndCache,
         "x_gaussian_beta_symmetries": CachingLevel.ForwardAndCache,
         "x_gaussian_section_molecular_multipoles": CachingLevel.Forward,
         "dipole_moment_x": CachingLevel.Cache,
         "dipole_moment_y": CachingLevel.Cache,
         "dipole_moment_z": CachingLevel.Cache,
-        "quadrupole_moment_xx": CachingLevel.Cache,  
+        "quadrupole_moment_xx": CachingLevel.Cache,
         "quadrupole_moment_yy": CachingLevel.Cache,
         "quadrupole_moment_zz": CachingLevel.Cache,
         "quadrupole_moment_xy": CachingLevel.Cache,
@@ -1520,7 +1520,7 @@ cachingLevelForMetaName = {
         "hexadecapole_moment_yyzz": CachingLevel.Cache,
         "hexadecapole_moment_xxyz": CachingLevel.Cache,
         "hexadecapole_moment_yyxz": CachingLevel.Cache,
-        "hexadecapole_moment_zzxy": CachingLevel.Cache, 
+        "hexadecapole_moment_zzxy": CachingLevel.Cache,
         "x_gaussian_molecular_multipole_values": CachingLevel.ForwardAndCache,
         "single_configuration_calculation_converged": CachingLevel.ForwardAndCache,
         "x_gaussian_single_configuration_calculation_converged": CachingLevel.ForwardAndCache,
@@ -1531,7 +1531,7 @@ cachingLevelForMetaName = {
         "section_method": CachingLevel.Forward,
         "x_gaussian_section_elstruc_method": CachingLevel.Forward,
         "x_gaussian_electronic_structure_method": CachingLevel.ForwardAndCache,
-        "XC_functional_name": CachingLevel.ForwardAndCache, 
+        "XC_functional_name": CachingLevel.ForwardAndCache,
         "basis_set_atom_centered_short_name": CachingLevel.Forward,
         "x_gaussian_settings": CachingLevel.Cache,
         "x_gaussian_settings_corrected": CachingLevel.ForwardAndCache,

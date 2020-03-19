@@ -826,7 +826,7 @@ class GaussianParserContext(object):
              for k in range(i+1,dim):
                  cartforceconst[i,k] = cartforceconst[k,i]
 
-          cartforceconst = convert_unit(cartforceconst, "forceAu / bohr", "J / (meter**2)")
+          cartforceconst = convert_unit(cartforceconst, "hartree / (bohr ** 2)", "J / (meter**2)")
 
           backend.addArrayValues("x_gaussian_force_constant_values", cartforceconst)
 
