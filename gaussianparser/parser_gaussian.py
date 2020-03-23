@@ -904,9 +904,12 @@ class GaussianParserContext(object):
               'RHF':        [{'name': 'HF_RHF_X'}],
               'UHF':        [{'name': 'HF_UHF_X'}],
               'ROHF':       [{'name': 'HF_ROHF_X'}],
+              'CC':         [{'name': 'HF_CCD'}],
+              'QCID':       [{'name': 'HF_CCD'}],
               'CCD':        [{'name': 'HF_CCD'}],
               'CCSD':       [{'name': 'HF_CCSD'}],
               'CCSD(T)':    [{'name': 'HF_CCSD(T)'}],
+              'CCSD-T':     [{'name': 'HF_CCSD(T)'}],
               'CI':         [{'name': 'HF_CI'}],
               'CID':        [{'name': 'HF_CID'}],
               'CISD':       [{'name': 'HF_CISD'}],
@@ -1007,11 +1010,14 @@ class GaussianParserContext(object):
               'CIS':       [{'name': 'CIS'}],
               'BD':        [{'name': 'BD'}],
               'BD(T)':     [{'name': 'BD(T)'}],
+              'CC':        [{'name': 'CCD'}],
+              'QCID':      [{'name': 'CCD'}],
               'CCD':       [{'name': 'CCD'}],
               'CCSD':      [{'name': 'CCSD'}],
               'EOMCCSD':   [{'name': 'EOMCCSD'}],
               'QCISD':     [{'name': 'QCISD'}],
               'CCSD(T)':   [{'name': 'CCSD(T)'}],
+              'CCSD-T':    [{'name': 'CCSD(T)'}],
               'QCISD(T)':  [{'name': 'QCISD(T)'}],
               'QCISD(TQ)': [{'name': 'QCISD(TQ)'}],
               'MP2':       [{'name': 'MP2'}],
@@ -1151,6 +1157,7 @@ class GaussianParserContext(object):
                   print("\n\n## x_gaussian_hf_detect" , section['x_gaussian_hf_detect']) # # DEBUG:
                for x in method1.split():
                   method2 = str(x)
+                  method2 = method2.split('=')[0]  # remove options, if present
                   if method2 != 'RHF' and method2 != 'UHF' and method2 != 'ROHF' and method2 != 'UFF':
                      if (method2[0] == 'R' and method2[0:2] != 'RO') or method2[0] == 'U':
                         methodprefix = method2[0]
@@ -1293,6 +1300,9 @@ class GaussianParserContext(object):
                for x in method1:
                   method2 = str(x)
                   method2 = method2.upper()
+                  method2 = method2.split('=')[0]  # remove options, if present
+                  if tmk_debug:   # tmk:
+                     print("##---\n## method2: ", method2)
                   if method2 != 'RHF' and method2 != 'UHF' and method2 != 'ROHF' and method2 != 'UFF':
                     if (method2[0] == 'R' and method2[0:2] != 'RO') or method2[0] == 'U':
                       methodprefix = method2[0]
@@ -1391,7 +1401,7 @@ class GaussianParserContext(object):
 
 # functionals where hybrid_xc_coeff are written
         if tmk_debug:  # DEBUG:
-           print("\n## xc: {}\n" .format(xc))
+           print("\n########\n## xc: {}\n" .format(xc))
            print("\n## x_gaussian_hf_detect_2" , section['x_gaussian_hf_detect'])
            #print("## scfcharacter:", self.scfcharacter)
 
