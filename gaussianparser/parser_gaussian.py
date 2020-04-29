@@ -840,6 +840,7 @@ class GaussianParserContext(object):
               'XA':         [{'name': 'LDA_X_EMPIRICAL'}],
               'VWN':        [{'name': 'LDA_C_VWN'}],
               'VWN3':       [{'name': 'LDA_C_VWN_3'}],
+              'SVWN':       [{'name': 'LDA_X'}, {'name': 'LDA_C_VWN'}],
               'LSDA':       [{'name': 'LDA_X'}, {'name': 'LDA_C_VWN'}],
               'B':          [{'name': 'GGA_X_B88'}],
               'BLYP':       [{'name': 'GGA_C_LYP'}, {'name': 'GGA_X_B88'}],
@@ -893,9 +894,22 @@ class GaussianParserContext(object):
               'BHANDHLYP':  [{'name': 'HYB_GGA_XC_BHANDHLYP'}],
               'APF':        [{'name': 'HYB_GGA_XC_APF'}],
               'APFD':       [{'name': 'HYB_GGA_XC_APFD'}],
+              'HF' :        [{'name': 'HF_HF_X'}],
               'RHF':        [{'name': 'HF_RHF_X'}],
               'UHF':        [{'name': 'HF_UHF_X'}],
               'ROHF':       [{'name': 'HF_ROHF_X'}],
+              'CC':         [{'name': 'HF_CCD'}],
+              'QCID':       [{'name': 'HF_CCD'}],
+              'CCD':        [{'name': 'HF_CCD'}],
+              'CCSD':       [{'name': 'HF_CCSD'}],
+              'CCSD(T)':    [{'name': 'HF_CCSD(T)'}],
+              'CCSD-T':     [{'name': 'HF_CCSD(T)'}],
+              'CI':         [{'name': 'HF_CI'}],
+              'CID':        [{'name': 'HF_CID'}],
+              'CISD':       [{'name': 'HF_CISD'}],
+              'QCISD':      [{'name': 'HF_QCISD'}],
+              'QCISD(T)':   [{'name': 'HF_QCISD(T)'}],
+              'QCISD(TQ)':  [{'name': 'HF_QCISD(TQ)'}],
               'OHSE2PBE':   [{'name': 'HYB_GGA_XC_HSE03'}],
               'HSEH1PBE':   [{'name': 'HYB_GGA_XC_HSE06'}],
               'OHSE1PBE':   [{'name': 'HYB_GGA_XC_HSEOLD'}],
@@ -907,6 +921,29 @@ class GaussianParserContext(object):
               'M062X':      [{'name': 'HYB_MGGA_X_M06_2X'}, {'name': 'MGGA_C_M06_2X'}],
               'M06HF':      [{'name': 'HYB_MGGA_X_M06_HF'}, {'name': 'MGGA_C_M06_HF'}],
               'M11':        [{'name': 'HYB_MGGA_X_M11'}, {'name': 'MGGA_C_M11'}],
+              'MP2':        [{'name': 'HF_MP2'}],
+              'MP3':        [{'name': 'HF_MP3'}],
+              'MP4':        [{'name': 'HF_MP4'}],
+              'MP4(DQ)':    [{'name': 'HF_MP4(DQ)'}],
+              'MP4(SDQ)':   [{'name': 'HF_MP4(SDQ)'}],
+              'MP4(SDTQ)':  [{'name': 'HF_MP4SDTQ'}],
+              'MP5':        [{'name': 'HF_MP5'}],
+              'AM1':        [{'name': 'HYB_AM1'}],
+              'PM3':        [{'name': 'HYB_PM3'}],
+              'PM3MM':      [{'name': 'HYB_PM3MM'}],
+              'PM3D3':      [{'name': 'HYB_PM3D3'}],
+              'PM6':        [{'name': 'HYB_PM6'}],
+              'PM7':        [{'name': 'HYB_PM7'}],
+              'PM7R6':      [{'name': 'HYB_PM7R6'}],
+              'PM7MOPAC':   [{'name': 'HYB_PM7MOPAC'}],
+              'CBS-4':      [{'name': 'HYB_CBS-4'}],
+              'CBS-4M':     [{'name': 'HYB_CBS-4M'}],
+              'CBS-4O':     [{'name': 'HYB_CBS-4O'}],
+              'CBS-APNO':   [{'name': 'HYB_CBS-APNO'}],
+              'CBS-Q':      [{'name': 'HYB_CBS-Q'}],
+              'CBS-QB3':    [{'name': 'HYB_CBS-QB3'}],
+              'CBS-QB3O':   [{'name': 'HYB_CBS-QB3O'}],
+              'ROCBS-QB3':  [{'name': 'HYB_ROCBS-QB3'}],
               'SOGGA11X':   [{'name': 'HYB_GGA_X_SOGGA11_X'}, {'name': 'HYB_GGA_X_SOGGA11_X'}],
               'MN12SX':     [{'name': 'HYB_MGGA_X_MN12_SX'}, {'name': 'MGGA_C_MN12_SX'}],
               'N12SX':      [{'name': 'HYB_GGA_X_N12_SX'}, {'name': 'GGA_C_N12_SX'}],
@@ -922,6 +959,15 @@ class GaussianParserContext(object):
               'MPW2PLYPD':  [{'name': 'HYB_MPW2PLYPD'}],
               'B2PLYPD3':   [{'name': 'HYB_B2PLYPD3'}],
               'MPW2PLYPD3': [{'name': 'HYB_MPW2PLYPD3'}],
+              'G1':         [{'name': 'HYB_G1'}],
+              'G2':         [{'name': 'HYB_G2'}],
+              'G2MP2':      [{'name': 'HYB_G2MP2'}],
+              'G3':         [{'name': 'HYB_G3'}],
+              'G3B3':       [{'name': 'HYB_G3B3'}],
+              'G3MP2':      [{'name': 'HYB_G3MP2'}],
+              'G3MP2B3':    [{'name': 'HYB_G3MP2B3'}],
+              'G4':         [{'name': 'HYB_G4'}],
+              'G4MP2':      [{'name': 'HYB_G4MP2'}],
               'LC-':        [{'name': 'GGA_X_ITYH_LONG_RANGE'}],
              }
 
@@ -934,6 +980,9 @@ class GaussianParserContext(object):
               'PM3MM':     [{'name': 'PM3MM'}],
               'PM3D3':     [{'name': 'PM3D3'}],
               'PM6':       [{'name': 'PM6'}],
+              'PM7':       [{'name': 'PM7'}],
+              'PM7R6':     [{'name': 'PM7R6'}],
+              'PM7MOPAC':  [{'name': 'PM7MOPAC'}],
               'PDDG':      [{'name': 'PDDG'}],
               'CNDO':      [{'name': 'CNDO'}],
               'INDO':      [{'name': 'INDO'}],
@@ -949,16 +998,20 @@ class GaussianParserContext(object):
               'ROHF':      [{'name': 'ROHF'}],
               'GVB':       [{'name': 'GVB'}],
               'DFT':       [{'name': 'DFT'}],
+              'CI':        [{'name': 'CI'}],
               'CID':       [{'name': 'CID'}],
               'CISD':      [{'name': 'CISD'}],
               'CIS':       [{'name': 'CIS'}],
               'BD':        [{'name': 'BD'}],
               'BD(T)':     [{'name': 'BD(T)'}],
+              'CC':        [{'name': 'CCD'}],
+              'QCID':      [{'name': 'CCD'}],
               'CCD':       [{'name': 'CCD'}],
               'CCSD':      [{'name': 'CCSD'}],
               'EOMCCSD':   [{'name': 'EOMCCSD'}],
               'QCISD':     [{'name': 'QCISD'}],
               'CCSD(T)':   [{'name': 'CCSD(T)'}],
+              'CCSD-T':    [{'name': 'CCSD(T)'}],
               'QCISD(T)':  [{'name': 'QCISD(T)'}],
               'QCISD(TQ)': [{'name': 'QCISD(TQ)'}],
               'MP2':       [{'name': 'MP2'}],
@@ -982,13 +1035,16 @@ class GaussianParserContext(object):
               'G3MP2B3':   [{'name': 'G3MP2B3'}],
               'G4':        [{'name': 'G4'}],
               'G4MP2':     [{'name': 'G4MP2'}],
-              'CBSEXTRAP':   [{'name': 'CBSExtrapolate'}],
-              'CBSEXTRAPOLATE':   [{'name': 'CBSExtrapolate'}],
+              'CBS-4':     [{'name': 'CBS-4'}],
               'CBS-4M':    [{'name': 'CBS-4M'}],
               'CBS-4O':    [{'name': 'CBS-4O'}],
+              'CBS-APNO':  [{'name': 'CBS-APNO'}],
+              'CBS-Q':     [{'name': 'CBS-Q'}],
               'CBS-QB3':   [{'name': 'CBS-QB3'}],
               'CBS-QB3O':  [{'name': 'CBS-QB3O'}],
-              'CBS-APNO':  [{'name': 'CBS-APNO'}],
+              'CBSEXTRAP':   [{'name': 'CBSExtrapolate'}],
+              'CBSEXTRAPOLATE':   [{'name': 'CBSExtrapolate'}],
+              'ROCBS-QB3': [{'name': 'ROCBS-QB3'}],
               'W1U':       [{'name': 'W1U'}],
               'W1BD':      [{'name': 'W1BD'}],
               'W1RO':      [{'name': 'W1RO'}],
@@ -1088,6 +1144,7 @@ class GaussianParserContext(object):
                method1 = method1.upper()
                for x in method1.split():
                   method2 = str(x)
+                  method2 = method2.split('=')[0]  # remove options, if present
                   if method2 != 'RHF' and method2 != 'UHF' and method2 != 'ROHF' and method2 != 'UFF':
                      if (method2[0] == 'R' and method2[0:2] != 'RO') or method2[0] == 'U':
                         methodprefix = method2[0]
@@ -1209,9 +1266,14 @@ class GaussianParserContext(object):
                        pass
           else:
                method1 = settings.split()
+               method1 = settings.upper()
+               method1 = method1.replace("['#p ","").replace("['#P ","").replace("['#","").replace("']","")
+               method1 = method1.split()
+
                for x in method1:
                   method2 = str(x)
                   method2 = method2.upper()
+                  method2 = method2.split('=')[0]  # remove options, if present
                   if method2 != 'RHF' and method2 != 'UHF' and method2 != 'ROHF' and method2 != 'UFF':
                     if (method2[0] == 'R' and method2[0:2] != 'RO') or method2[0] == 'U':
                       methodprefix = method2[0]
