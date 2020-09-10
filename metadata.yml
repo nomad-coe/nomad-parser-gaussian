@@ -1,0 +1,7 @@
+code-label: Gaussian
+code-label-style: 'Capitals: G'
+code-url: http://gaussian.com
+parser-dir-name: dependencies/parsers/gaussian/
+parser-git-url: https://gitlab.mpcdf.mpg.de/nomad-lab/parser-gaussian
+parser-specific: ''
+table-of-files: ''
