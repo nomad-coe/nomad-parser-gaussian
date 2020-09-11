@@ -13,7 +13,7 @@ in the same directory as files that also belong to that entry. Parsers
 might also read information from these auxillary files. This way you can add more files
 to an entry, even if the respective parser/code might not directly support it.
 
-For gaussian please provide at least the files from this table if applicable to your
+For Gaussian please provide at least the files from this table if applicable to your
 calculations (remember that you can provide more files if you want):
 
 
@@ -49,12 +49,12 @@ import sys
 from nomad.cli.parse import parse, normalize_all
 
 # match and run the parser
-backend = parse(sys.argv[1])
+archive = parse(sys.argv[1])
 # run all normalizers
-normalize_all(backend)
+normalize_all(archive)
 
 # get the 'main section' section_run as a metainfo object
-section_run = backend.resource.contents[0].section_run[0]
+section_run = archive.section_run[0]
 
 # get the same data as JSON serializable Python dict
 python_dict = section_run.m_to_dict()
@@ -76,3 +76,5 @@ pip install -e parser-gaussian
 ```
 
 Running the parser now, will use the parser's Python code from the clone project.
+
+
