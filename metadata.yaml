@@ -2,6 +2,6 @@ codeLabel: Gaussian
 codeLabelStyle: 'Capitals: G'
 codeUrl: http://gaussian.com
 parserDirName: dependencies/parsers/gaussian/
-parserGitUrl: https://gitlab.mpcdf.mpg.de/nomad-lab/parser-gaussian
+parserGitUrl: https://github.com/nomad-coe/nomad-parser-gaussian.git
 parserSpecific: ''
 tableOfFiles: ''
