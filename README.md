@@ -1,5 +1,3 @@
-$preamble$
-
 This is a NOMAD parser for [Gaussian](http://gaussian.com). It will read Gaussian input and
 output files and provide all information in NOMAD's unified Metainfo based Archive format.
 
@@ -81,10 +79,8 @@ pip install nomad-lab
 Clone the parser project and install it in development mode:
 
 ```
-git clone https://github.com/nomad-coe/nomad-parser-gaussian.git parser-
-pip install -e parser-
+git clone https://github.com/nomad-coe/nomad-parser-gaussian.git nomad-parser-gaussian
+pip install -e nomad-parser-gaussian
 ```
 
 Running the parser now, will use the parser's Python code from the clone project.
-
-
