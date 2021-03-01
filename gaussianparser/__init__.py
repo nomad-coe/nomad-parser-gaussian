@@ -16,4 +16,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from gaussianparser.parser_gaussian import GaussianParser
+from gaussianparser.gaussian_parser import GaussianParser
