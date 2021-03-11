@@ -29,9 +29,10 @@ class GaussianOutParser(TextParser):
     def init_quantities(self):
         re_float = r'[\d\.\-\+Ee]+'
         re_float_dexp = r'[\d\.\-\+EeDd]+'
+        re_eigs = re.compile(r'(\-?\d+\.\d+\s*)')
 
         def str_to_exp(val_in):
-            val = np.array(val_in.upper().replace('D', 'E').split(), dtype=float)
+            val = np.array(val_in.rstrip('.').upper().replace('D', 'E').split(), dtype=float)
             return val[0] if len(val) == 1 else val
 
         def str_to_orbital_symmetries(val_in):
@@ -43,14 +44,14 @@ class GaussianOutParser(TextParser):
             spin_index = 0 if val[0] == 'Alpha' else 1
             occ = 0. if val[1] == 'virt' else 1.
             eigs, occs = [[], []], [[], []]
-            eigs[spin_index] = [float(v) for v in val[2:]]
+            # gaussian sometimes prints values without spaces so we need a re matching
+            eigs[spin_index] = re_eigs.findall(val_in)
             occs[spin_index] = [occ] * len(eigs[spin_index])
             return eigs, occs
 
         def str_to_normal_modes(val_in):
             val = [v.split() for v in val_in.split('\n')]
-            val = np.array([v[2:5] for v in val if len(v) == 5], dtype=float)
-            return np.reshape(val, (len(val), 3))
+            return np.array([v[2:] for v in val if len(v) >= 5], dtype=float)
 
         def str_to_force_constants(val_in):
             val = re.findall(r'(\d+\s*\-?\d+\..*)', val_in)
@@ -67,23 +68,28 @@ class GaussianOutParser(TextParser):
             fc = fc + fc.T - np.diag(fc.diagonal())
             return fc
 
-        calculation_quantities = [
+        orientation_quantities = [
             Quantity(
                 'standard_orientation',
                 r'd orientation[\s\S]+?X\s*Y\s*Z\s*\-+\s*([\d\.\s\-]+?)\-{2}',
-                dtype=float),
+                convert=False, str_operation=lambda x: np.array(
+                    [v.split() for v in x.strip().split('\n')], dtype=float)),
             Quantity(
                 'input_orientation',
                 r't orientation[\s\S]+?X\s*Y\s*Z\s*\-+\s*([\d\.\s\-]+?)\-{2}',
-                dtype=float),
+                convert=False, str_operation=lambda x: np.array(
+                    [v.split() for v in x.strip().split('\n')], dtype=float)),
             Quantity(
                 'z_matrix_orientation',
                 r'x orientation[\s\S]+?X\s*Y\s*Z\s*\-+\s*([\d\.\s\-]+?)\-{2}',
-                dtype=float),
+                convert=False, str_operation=lambda x: np.array(
+                    [v.split() for v in x.strip().split('\n')], dtype=float))]
+
+        calculation_quantities = [
             Quantity(
                 'energy_total',
                 rf'\n *(?:Energy=|Electronic Energy)\s*({re_float_dexp})',
-                str_opeartion=str_to_exp, convert=False, unit='hartree', repeats=True),
+                str_operation=str_to_exp, convert=False, unit='hartree', repeats=True),
             Quantity(
                 'hybrid_xc_coeff1', rf'ScaHFX=\s*({re_float})', dtype=float),
             Quantity(
@@ -122,7 +128,7 @@ class GaussianOutParser(TextParser):
             Quantity('cc', r'(CCSD)\(T\)'),
             Quantity(
                 'energy_total_cc',
-                rf'CCSD\(T\)=\s*({re_float_dexp})',
+                rf'\n *CCSD\(T\)=\s*({re_float_dexp})',
                 str_operation=str_to_exp, convert=False, unit='hartree', repeats=True),
             Quantity(
                 'sd_correction_energy',
@@ -173,16 +179,20 @@ class GaussianOutParser(TextParser):
                 'optimization_completed',
                 r'(Optimization (?:completed|stopped))', flatten=False, convert=False),
             Quantity(
-                'orbital_symmetries',
-                r'Orbital symmetries:([\s\S]*?)The',
-                repeats=False, str_operation=str_to_orbital_symmetries),
-            Quantity(
-                'x_gaussian_elstate_symmetry',
-                r'The electronic state is\s*(.+)\.', flatten=False),
-            Quantity(
-                'eigenvalues',
-                r'(Alpha|Beta)\s*(occ|virt)\. eigenvalues \-\-(.+)',
-                repeats=True, str_operation=str_to_eigenvalues, convert=False),
+                'population_analysis',
+                r'(Population analysis using the SCF density[\s\S]+?Condensed)',
+                sub_parser=TextParser(quantities=[
+                    Quantity(
+                        'orbital_symmetries',
+                        r'Orbital symmetries:([\s\S]*?)The',
+                        repeats=False, str_operation=str_to_orbital_symmetries),
+                    Quantity(
+                        'x_gaussian_elstate_symmetry',
+                        r'The electronic state is\s*(.+)\.', flatten=False),
+                    Quantity(
+                        'eigenvalues',
+                        r'(Alpha|Beta)\s*(occ|virt)\. eigenvalues \-\-\s*((?:\-?\d+\.\d+\s*)+)',
+                        repeats=True, str_operation=str_to_eigenvalues, convert=False)])),
             Quantity(
                 'charge',
                 rf'\n *Charge=\s*({re_float})\s*electrons', dtype=float, unit='elementary_charge'),
@@ -208,10 +218,10 @@ class GaussianOutParser(TextParser):
                 dtype=float, unit='debye * angstrom**3'),
             Quantity(
                 'frequencies',
-                r'Frequencies \-\-\s*(.*)', dtype=float, repeats=True),
+                rf'\n *Frequencies \-\-\s*({re_float})', dtype=float, repeats=True),
             Quantity(
                 'reduced_masses',
-                r'Red\. masses \-\-\s*(.*)', dtype=float, repeats=True),
+                rf'\n *Red\. masses \-\-\s*({re_float})', dtype=float, repeats=True),
             Quantity(
                 'normal_modes',
                 r'Atom\s*AN.*\s*([\-\d\s\.]+)',
@@ -305,20 +315,15 @@ class GaussianOutParser(TextParser):
             Quantity(
                 'x_gaussian_atomic_masses', r'IAtWgt=([ \d\.]+)', dtype=float, repeats=True),
             Quantity(
-                'calculation',
-                r'(Standard orientation:[\s\S]+?)'
-                r'(?:Predicted change in Energy|\Z)',
-                sub_parser=TextParser(quantities=calculation_quantities), repeats=True),
-            Quantity(
-                'calculation',
-                r'(Input orientation:[\s\S]+?)'
-                r'(?:Predicted change in Energy|\Z)',
-                sub_parser=TextParser(quantities=calculation_quantities), repeats=True),
-            Quantity(
-                'calculation',
-                r'(Z\-Matrix orientation:[\s\S]+?)'
-                r'(?:Predicted change in Energy|\Z)',
-                sub_parser=TextParser(quantities=calculation_quantities), repeats=True),
+                'system',
+                r'((?:Standard|Z-Matrix|Input) orientation:[\s\S]+?)'
+                r'(?:Predicted change in Energy|PREDICTED CHANGE IN ENERGY|Z-Matrix orientation|Normal termination)',
+                repeats=True, sub_parser=TextParser(quantities=[
+                    Quantity(
+                        'calculation',
+                        r'(<S\*\*2> of initial guess=[\s\S]+?(?:Initial guess read from the read\-write|\Z))',
+                        sub_parser=TextParser(quantities=calculation_quantities), repeats=True)
+                ] + calculation_quantities + orientation_quantities)),
             Quantity('program_cpu_time', r'Job cpu time:(.*)\.\n', flatten=False),
             Quantity(
                 'program_termination_date',
@@ -716,7 +721,7 @@ class GaussianParser(FairdiParser):
             sec_casscf.x_gaussian_casscf_energy = energy
 
         # orbital symmetries
-        orbital_symmetries = section.get('orbital_symmetries')
+        orbital_symmetries = section.get('population_analysis', {}).get('orbital_symmetries')
         if orbital_symmetries is not None:
             sec_orbital_symmetries = sec_run.m_create(x_gaussian_section_orbital_symmetries)
             if orbital_symmetries[:2]:
@@ -725,20 +730,14 @@ class GaussianParser(FairdiParser):
                 sec_orbital_symmetries.x_gaussian_beta_symmetries = np.concatenate(orbital_symmetries[2:])
 
         # electronic symmetries
-        elstate_symmetry = section.get('x_gaussian_elstate_symmetry')
+        elstate_symmetry = section.get('population_analysis', {}).get('x_gaussian_elstate_symmetry')
         if elstate_symmetry is not None:
             sec_symmetry = sec_run.m_create(x_gaussian_section_symmetry)
             sec_symmetry.x_gaussian_elstate_symmetry = elstate_symmetry
 
-        # optimization
-        optimization_completed = section.get('optimization_completed')
-        if optimization_completed is not None:
-            sec_optimization_info = sec_run.m_create(x_gaussian_section_geometry_optimization_info)
-            sec_optimization_info.x_gaussian_geometry_optimization_converged = optimization_completed
-
         # eigenvalues
         values, occupation = [[], []], [[], []]
-        eigenvalues = section.get('eigenvalues')
+        eigenvalues = section.get('population_analysis', {}).get('eigenvalues')
         if eigenvalues is not None:
             for eigs_occs in eigenvalues:
                 for spin in range(2):
@@ -747,11 +746,20 @@ class GaussianParser(FairdiParser):
             if not values[1]:
                 values = values[0:1]
                 occupation = np.array(occupation[0:1]) * 2
-            sec_eigenvalues = sec_scc.m_create(Eigenvalues)
-            values = np.reshape(values, (len(values), 1, len(values[0])))
-            occupation = np.reshape(occupation, (len(occupation), 1, len(occupation[0])))
-            sec_eigenvalues.eigenvalues_values = pint.Quantity(values, 'hartree')
-            sec_eigenvalues.eigenvalues_occupation = occupation
+            try:
+                values = np.reshape(values, (len(values), 1, len(values[0])))
+                occupation = np.reshape(occupation, (len(occupation), 1, len(occupation[0])))
+                sec_eigenvalues = sec_scc.m_create(Eigenvalues)
+                sec_eigenvalues.eigenvalues_values = pint.Quantity(values, 'hartree')
+                sec_eigenvalues.eigenvalues_occupation = occupation
+            except Exception:
+                self.logger.error('Error setting eigenvalues.')
+
+        # optimization
+        optimization_completed = section.get('optimization_completed')
+        if optimization_completed is not None:
+            sec_optimization_info = sec_run.m_create(x_gaussian_section_geometry_optimization_info)
+            sec_optimization_info.x_gaussian_geometry_optimization_converged = optimization_completed
 
         # multipoles
         multipoles = []
@@ -866,10 +874,9 @@ class GaussianParser(FairdiParser):
         if orientation is None:
             orientation = section.get('z_matrix_orientation')
         if orientation is not None:
-            orientation = np.reshape(orientation, (len(orientation) // 6, 6)).T
             sec_system.atom_labels = [
-                ase.data.chemical_symbols[int(n)] for n in orientation[1]]
-            sec_system.atom_positions = pint.Quantity(orientation[3:6].T, 'angstrom')
+                ase.data.chemical_symbols[int(n)] for n in [o[1] for o in orientation]]
+            sec_system.atom_positions = pint.Quantity([o[-3:] for o in orientation], 'angstrom')
             sec_system.x_gaussian_number_of_atoms = len(sec_system.atom_labels)
 
         for key in ['x_gaussian_total_charge', 'x_gaussian_spin_target_multiplicity']:
@@ -880,16 +887,25 @@ class GaussianParser(FairdiParser):
         return sec_system
 
     def parse_configurations(self, n_run):
-        calculations = self.out_parser.get('run')[n_run].get('calculation', [])
-        for calculation in calculations:
-            sec_system = self.parse_system(n_run, calculation)
-            sec_scc = self.parse_scc(calculation)
-            if sec_scc is not None:
-                if sec_system is not None:
-                    sec_scc.single_configuration_calculation_to_system_ref = sec_system
-                sec_method = self.archive.section_run[-1].section_method
-                if sec_method:
-                    sec_scc.single_configuration_to_calculation_method_ref = sec_method[-1]
+        systems = self.out_parser.get('run')[n_run].get('system', [])
+        for system in systems:
+            sec_system = self.parse_system(n_run, system)
+            for calculation in system.get('calculation', [system]):
+                sec_scc = self.parse_scc(calculation)
+                if sec_scc is not None:
+                    if sec_system is not None:
+                        sec_scc.single_configuration_calculation_to_system_ref = sec_system
+                    sec_method = self.archive.section_run[-1].section_method
+                    if sec_method:
+                        sec_scc.single_configuration_to_calculation_method_ref = sec_method[-1]
+
+            # sec_scc = self.parse_scc(system)
+            # if sec_scc is not None:
+            #     if sec_system is not None:
+            #         sec_scc.single_configuration_calculation_to_system_ref = sec_system
+            #     sec_method = self.archive.section_run[-1].section_method
+            #     if sec_method:
+            #         sec_scc.single_configuration_to_calculation_method_ref = sec_method[-1]
 
     def parse_method(self, n_run):
         sec_run = self.archive.section_run[-1]
