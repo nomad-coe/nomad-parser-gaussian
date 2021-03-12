@@ -29,7 +29,8 @@ class GaussianOutParser(TextParser):
     def init_quantities(self):
         re_float = r'[\d\.\-\+Ee]+'
         re_float_dexp = r'[\d\.\-\+EeDd]+'
-        re_eigs = re.compile(r'(\-?\d+\.\d+\s*)')
+        re_eigs = re.compile(r'(\-?\d*\.\d+\s*)')
+        re_force = re.compile(r'(\d+\s*\-?\d*\..*)')
 
         def str_to_exp(val_in):
             val = np.array(val_in.rstrip('.').upper().replace('D', 'E').split(), dtype=float)
@@ -54,7 +55,7 @@ class GaussianOutParser(TextParser):
             return np.array([v[2:] for v in val if len(v) >= 5], dtype=float)
 
         def str_to_force_constants(val_in):
-            val = re.findall(r'(\d+\s*\-?\d+\..*)', val_in)
+            val = re_force.findall(val_in)
             fc = []
             for v in val:
                 v = np.array(v.upper().replace('D', 'E').split(), dtype=float)
@@ -191,7 +192,7 @@ class GaussianOutParser(TextParser):
                         r'The electronic state is\s*(.+)\.', flatten=False),
                     Quantity(
                         'eigenvalues',
-                        r'(Alpha|Beta)\s*(occ|virt)\. eigenvalues \-\-\s*((?:\-?\d+\.\d+\s*)+)',
+                        r'(Alpha|Beta)\s*(occ|virt)\. eigenvalues \-\-\s*(.+)',
                         repeats=True, str_operation=str_to_eigenvalues, convert=False)])),
             Quantity(
                 'charge',
