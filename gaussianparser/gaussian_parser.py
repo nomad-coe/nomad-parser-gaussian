@@ -493,6 +493,8 @@ class GaussianParser(FairdiParser):
             'G4': [{'name': 'HYB_G4'}],
             'G4MP2': [{'name': 'HYB_G4MP2'}],
             'LC-': [{'name': 'GGA_X_ITYH_LONG_RANGE'}],
+            'BP': [{'name': 'GGA_X_B88'}, {'name': 'GGA_C_P86'}],
+            'BP86': [{'name': 'GGA_X_B88'}, {'name': 'GGA_C_P86'}]
         }
 
         self._method_map = {
@@ -998,10 +1000,10 @@ class GaussianParser(FairdiParser):
             if xc_functional is not None:
                 xc_functionals.add(xc_functional)
 
-            if parameter[1:]:
-                basis_set = resolve_basis_set(parameter[1].strip())
-                if basis_set is not None:
-                    basis_sets.add(basis_set)
+            basis_set_parameter = parameter[0] if not parameter[1:] else parameter[1]
+            basis_set = resolve_basis_set(basis_set_parameter.strip())
+            if basis_set is not None:
+                basis_sets.add(basis_set)
 
         if len(methods) != 1:
             self.logger.error('Found mutiple or no method', data=dict(
