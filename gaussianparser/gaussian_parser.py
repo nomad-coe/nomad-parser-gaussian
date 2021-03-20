@@ -105,35 +105,35 @@ class GaussianOutParser(TextParser):
             Quantity(
                 'mp2_correction_energy',
                 rf'E2 =\s*({re_float_dexp})',
-                str_operation=str_to_exp, convert=False, unit='hartree'),
+                str_operation=str_to_exp, convert=False, unit='hartree', repeats=True),
             Quantity(
                 'mp3_correction_energy',
                 rf'E3\s*=\s*({re_float_dexp})',
-                str_operation=str_to_exp, convert=False, unit='hartree'),
+                str_operation=str_to_exp, convert=False, unit='hartree', repeats=True),
             Quantity(
                 'mp4dq_correction_energy',
                 rf'E4\(DQ\)=\s*({re_float_dexp})',
-                str_operation=str_to_exp, convert=False, unit='hartree'),
+                str_operation=str_to_exp, convert=False, unit='hartree', repeats=True),
             Quantity(
                 'mp4sdq_correction_energy',
                 rf'E4\(SDQ\)=\s*({re_float_dexp})',
-                str_operation=str_to_exp, convert=False, unit='hartree'),
+                str_operation=str_to_exp, convert=False, unit='hartree', repeats=True),
             Quantity(
                 'mp4sdtq_correction_energy',
                 rf'E4\(SDTQ\)=\s*({re_float_dexp})',
-                str_operation=str_to_exp, convert=False, unit='hartree'),
+                str_operation=str_to_exp, convert=False, unit='hartree', repeats=True),
             Quantity(
                 'mp5_correction_energy',
                 rf'DEMP5 =\s*({re_float_dexp})',
-                str_operation=str_to_exp, convert=False, unit='hartree'),
-            Quantity('cc', r'(CCSD)\(T\)'),
+                str_operation=str_to_exp, convert=False, unit='hartree', repeats=True),
+            Quantity('cc', r'((?:CCSD\(T\)|E\(CORR\)))'),
             Quantity(
                 'energy_total_cc',
-                rf'\n *CCSD\(T\)=\s*({re_float_dexp})',
+                rf'(?:\n *CCSD\(T\)|E\(CORR\))\s*=\s*({re_float_dexp})',
                 str_operation=str_to_exp, convert=False, unit='hartree', repeats=True),
             Quantity(
-                'sd_correction_energy',
-                rf'DE\(Corr\)=\s*({re_float_dexp})\s*E\(CORR\)=\s*({re_float_dexp})',
+                'ccsd_correction_energy',
+                rf'DE\(Corr\)=\s*({re_float_dexp})',
                 str_operation=str_to_exp, convert=False, unit='hartree', repeats=True),
             Quantity('qci', r'(Quadratic Configuration Interaction)'),
             Quantity(
@@ -185,11 +185,11 @@ class GaussianOutParser(TextParser):
                 sub_parser=TextParser(quantities=[
                     Quantity(
                         'orbital_symmetries',
-                        r'Orbital symmetries:([\s\S]*?)The',
+                        r'Orbital symmetries:([\s\S]*?)electro',
                         repeats=False, str_operation=str_to_orbital_symmetries),
                     Quantity(
                         'x_gaussian_elstate_symmetry',
-                        r'The electronic state is\s*(.+)\.', flatten=False),
+                        r'nic state is\s*(.+)\.', flatten=False),
                     Quantity(
                         'eigenvalues',
                         r'(Alpha|Beta)\s*(occ|virt)\. eigenvalues \-\-\s*(.+)',
@@ -219,10 +219,10 @@ class GaussianOutParser(TextParser):
                 dtype=float, unit='debye * angstrom**3'),
             Quantity(
                 'frequencies',
-                rf'\n *Frequencies \-\-\s*({re_float})', dtype=float, repeats=True),
+                r'\n *Frequencies \-\-\s*(.+)', dtype=float, repeats=True),
             Quantity(
                 'reduced_masses',
-                rf'\n *Red\. masses \-\-\s*({re_float})', dtype=float, repeats=True),
+                r'\n *Red\. masses \-\-\s*(.+)', dtype=float, repeats=True),
             Quantity(
                 'normal_modes',
                 r'Atom\s*AN.*\s*([\-\d\s\.]+)',
@@ -232,7 +232,7 @@ class GaussianOutParser(TextParser):
                 rf'Temperature\s*({re_float})\s*Kelvin\.\s*Pressure\s*({re_float})\s*Atm\.'),
             Quantity(
                 'moments',
-                r'Eigenvalues \-\-\s*(\d+\.\d{5})\s*(\d+\.\d{5})\s*(\d+\.\d{5})',
+                r'(?:Eigenvalues|EIGENVALUES) \-\-\s*(\d+\.\d{5})\s*(\d+\.\d{5})\s*(\d+\.\d{5})',
                 dtype=float, unit='amu*angstrom**2'),
             Quantity(
                 'zero_point_energy',
@@ -325,6 +325,10 @@ class GaussianOutParser(TextParser):
                         r'(<S\*\*2> of initial guess=[\s\S]+?(?:Initial guess read from the read\-write|\Z))',
                         sub_parser=TextParser(quantities=calculation_quantities), repeats=True)
                 ] + calculation_quantities + orientation_quantities)),
+            Quantity(
+                'iteration',
+                r'ation Nr\.([\s\S]+?)(?:Iter|\n\n)',
+                repeats=True, sub_parser=TextParser(quantities=calculation_quantities)),
             Quantity('program_cpu_time', r'Job cpu time:(.*)\.\n', flatten=False),
             Quantity(
                 'program_termination_date',
@@ -647,10 +651,10 @@ class GaussianParser(FairdiParser):
         self._energy_methods = {
             'mp': (x_gaussian_section_moller_plesset, [
                 'mp2', 'mp3', 'mp4dq', 'mp4sdq', 'mp4sdtq', 'mp5']),
-            'cc': (x_gaussian_section_coupled_cluster, []),
+            'cc': (x_gaussian_section_coupled_cluster, ['ccsd']),
             'qci': (x_gaussian_section_quadratic_ci, ['qcisd', 'qcisdtq']),
             'ci': (x_gaussian_section_ci, ['ci']),
-            'semiempirical': (x_gaussian_section_semiempirical, []),
+            'semiempirical': (x_gaussian_section_semiempirical, ['']),
             'molmech': (x_gaussian_section_molmech, [])}
 
     def parse_scc(self, section):
@@ -672,23 +676,21 @@ class GaussianParser(FairdiParser):
                 sec_hybrid_coeffs = sec_scc.m_create(x_gaussian_section_hybrid_coeffs)
             setattr(sec_hybrid_coeffs, 'hybrid_xc_%s' % key, val)
 
-        def parse_energy_corrections(method):
-            if section.get(method) is None:
+        def parse_energy_corrections(method, iteration=False):
+
+            if not iteration and section.get(method) is None:
                 return
 
             sec_method, energy_keys = self._energy_methods.get(method, (None, []))
             if sec_method is None:
                 return
 
+            sec_method = sec_scc.m_create(sec_method)
             for key in energy_keys:
                 key = '%s_correction_energy' % key
                 val = section.get(key)
                 if val is not None:
-                    setattr(sec_method, 'x_gaussian_%s' % key, val)
-
-            energy_sd = section.get('sd_correction_energy')
-            if energy_sd is not None:
-                setattr(sec_method, 'x_gaussian_%ssdcorrection_energy' % method, energy_sd)
+                    setattr(sec_method, 'x_gaussian_%s' % key, val[-1])
 
             energy_method = section.get('%s_method' % method)
             if energy_method is not None:
@@ -702,9 +704,14 @@ class GaussianParser(FairdiParser):
             if energy_total is not None:
                 sec_scc.energy_total = energy_total[-1]
 
+            return sec_method
+
         # energy corrections calculated from different methods
+        sec_energy_method = None
         for method in ['mp', 'cc', 'qci', 'ci', 'semiempirical', 'molmech']:
-            parse_energy_corrections(method)
+            sec_energy_method = parse_energy_corrections(method)
+            if sec_energy_method is not None:
+                break
 
         # TODO make metainfo accept array not separate sections
         # excited state
@@ -806,7 +813,9 @@ class GaussianParser(FairdiParser):
                 sec_frequencies.x_gaussian_red_masses = reduced_masses.to('kg').magnitude
             normal_modes = section.get('normal_modes')
             if normal_modes is not None:
-                sec_frequencies.x_gaussian_normal_mode_values = np.hstack(normal_modes)
+                normal_modes = np.hstack(normal_modes)
+                normal_modes = np.reshape(normal_modes, (len(normal_modes), len(normal_modes[0]) // 3, 3))
+                sec_frequencies.x_gaussian_normal_mode_values = np.transpose(normal_modes, axes=(1, 0, 2))
 
         # thermochemistry
         temperature_pressure = section.get('temperature_pressure')
@@ -902,13 +911,16 @@ class GaussianParser(FairdiParser):
                     if sec_method:
                         sec_scc.single_configuration_to_calculation_method_ref = sec_method[-1]
 
-            # sec_scc = self.parse_scc(system)
-            # if sec_scc is not None:
-            #     if sec_system is not None:
-            #         sec_scc.single_configuration_calculation_to_system_ref = sec_system
-            #     sec_method = self.archive.section_run[-1].section_method
-            #     if sec_method:
-            #         sec_scc.single_configuration_to_calculation_method_ref = sec_method[-1]
+        iterations = self.out_parser.get('run')[n_run].get('iteration', [])
+        sec_system = self.archive.section_run[0].section_system
+        sec_method = self.archive.section_run[0].section_method
+        for iteration in iterations:
+            sec_scc = self.parse_scc(iteration)
+            if sec_scc is not None:
+                if sec_system:
+                    sec_scc.single_configuration_calculation_to_system_ref = sec_system[-1]
+                if sec_method:
+                    sec_scc.single_configuration_to_calculation_method_ref = sec_method[-1]
 
     def parse_method(self, n_run):
         sec_run = self.archive.section_run[-1]
@@ -983,7 +995,7 @@ class GaussianParser(FairdiParser):
                     return '%s%s' % (x_name, c_name)
 
         settings = run.get('x_gaussian_settings_corrected', '').upper()
-        settings = re.sub(r'#[Pp]?\s*', '', settings)
+        settings = re.sub(r'(?:#[Pp]? |# *)', '', settings)
         xc_functionals = set()
         basis_sets = set()
         methods = set()
@@ -1010,6 +1022,7 @@ class GaussianParser(FairdiParser):
                 n_parsed=len(methods)))
         for method in methods:
             sec_method.x_gaussian_method = method
+            sec_method.electronic_structure_method = method
             for entry in self._method_map.get(method, []):
                 sec_elstruc_method = sec_method.m_create(x_gaussian_section_elstruc_method)
                 sec_elstruc_method.x_gaussian_electronic_structure_method = '%s%s' % (
@@ -1072,4 +1085,4 @@ class GaussianParser(FairdiParser):
             for key in ['program_cpu_time', 'program_termination_date']:
                 val = runs[n].get(key)
                 if val is not None:
-                    setattr(sec_times, 'x_gaussian_%s' % key, val)
+                    setattr(sec_times, 'x_gaussian_%s' % key, val.strip())
