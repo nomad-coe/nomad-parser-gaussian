@@ -23,6 +23,10 @@ from nomad.datamodel import EntryArchive
 from gaussianparser.gaussian_parser import GaussianParser
 
 
+def approx(value, abs=0, rel=1e-6):
+    return pytest.approx(value, abs=abs, rel=rel)
+
+
 @pytest.fixture(scope='module')
 def parser():
     return GaussianParser()
@@ -52,15 +56,15 @@ def test_scf_spinpol(parser):
 
     sec_sccs = sec_runs[0].section_single_configuration_calculation
     assert len(sec_sccs) == 1
-    assert sec_sccs[0].energy_total.magnitude == pytest.approx(-1.05675722e-15)
+    assert sec_sccs[0].energy_total.magnitude == approx(-1.05675722e-15)
     assert len(sec_sccs[0].x_gaussian_section_hybrid_coeffs) == 1
     assert np.shape(sec_sccs[0].section_eigenvalues[0].eigenvalues_occupation) == (1, 1, 50)
     assert np.shape(sec_sccs[0].section_eigenvalues[0].eigenvalues_values) == (1, 1, 50)
     assert sec_sccs[0].section_eigenvalues[0].eigenvalues_occupation[0][0][7] == 0
-    assert sec_sccs[0].section_eigenvalues[0].eigenvalues_values[0][0][-5].magnitude == pytest.approx(4.64011991e-18)
-    assert sec_sccs[0].x_gaussian_section_molecular_multipoles[0].x_gaussian_molecular_multipole_values[4] == pytest.approx(-9.36527896e-39)
+    assert sec_sccs[0].section_eigenvalues[0].eigenvalues_values[0][0][-5].magnitude == approx(4.64011991e-18)
+    assert sec_sccs[0].x_gaussian_section_molecular_multipoles[0].x_gaussian_molecular_multipole_values[4] == approx(-9.36527896e-39)
     assert len(sec_sccs[0].section_scf_iteration) == 1
-    assert sec_sccs[0].section_scf_iteration[0].x_gaussian_energy_scf.magnitude == pytest.approx(-1.05675722e-15)
+    assert sec_sccs[0].section_scf_iteration[0].x_gaussian_energy_scf.magnitude == approx(-1.05675722e-15)
     assert sec_sccs[0].single_configuration_calculation_converged
 
 
@@ -80,13 +84,13 @@ def test_scf_multirun(parser):
     assert len(sec_runs[1].section_method) == 1
 
     sec_scc = sec_runs[0].section_single_configuration_calculation[4]
-    assert sec_scc.atom_forces_raw[0][2].magnitude == pytest.approx(-9.69697756e-14)
-    assert sec_scc.section_scf_iteration[3].x_gaussian_delta_energy_total_scf_iteration.magnitude == pytest.approx(-8.82412332e-27)
+    assert sec_scc.atom_forces_raw[0][2].magnitude == approx(-9.69697756e-14)
+    assert sec_scc.section_scf_iteration[3].x_gaussian_delta_energy_total_scf_iteration.magnitude == approx(-8.82412332e-27)
 
     sec_thermo = sec_runs[1].x_gaussian_section_thermochem[0]
-    assert sec_thermo.x_gaussian_temperature == pytest.approx(298.15)
-    assert sec_thermo.x_gaussian_moments[1] == pytest.approx(8.59409221e-45)
-    assert sec_thermo.x_gaussian_thermal_correction_free_energy == pytest.approx(-1.00274129e-19)
+    assert sec_thermo.x_gaussian_temperature == approx(298.15)
+    assert sec_thermo.x_gaussian_moments[1] == approx(8.59409221e-45)
+    assert sec_thermo.x_gaussian_thermal_correction_free_energy == approx(-1.00274129e-19)
 
 
 def test_mp(parser):
@@ -95,9 +99,9 @@ def test_mp(parser):
 
     sec_sccs = archive.section_run[0].section_single_configuration_calculation
     assert len(sec_sccs) == 17
-    pytest.approx(sec_sccs[0].x_gaussian_section_moller_plesset[0].x_gaussian_mp2_correction_energy.magnitude, -3.17820357e-18)
-    pytest.approx(sec_sccs[-1].energy_total.magnitude, -1.12849219e-15)
-    pytest.approx(sec_sccs[3].x_gaussian_section_coupled_cluster[0].x_gaussian_ccsd_correction_energy.magnitude, -3.08257224e-18)
+    approx(sec_sccs[0].x_gaussian_section_moller_plesset[0].x_gaussian_mp2_correction_energy.magnitude, -3.17820357e-18)
+    approx(sec_sccs[-1].energy_total.magnitude, -1.12849219e-15)
+    approx(sec_sccs[3].x_gaussian_section_coupled_cluster[0].x_gaussian_ccsd_correction_energy.magnitude, -3.08257224e-18)
 
 
 def test_freq(parser):
