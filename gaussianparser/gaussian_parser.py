@@ -1,11 +1,11 @@
 import re
-import pint
 import numpy as np
 import logging
 import ase
 
 from .metainfo import m_env
 
+from nomad.units import ureg
 from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser.text_parser import TextParser, Quantity
 from nomad.datamodel.metainfo.common_dft import Run, Method, System, XCFunctionals,\
@@ -719,7 +719,7 @@ class GaussianParser(FairdiParser):
         for state in excited_state:
             sec_excited_state = sec_scc.m_create(x_gaussian_section_excited)
             sec_excited_state.x_gaussian_excited_state_number = int(state[0])
-            sec_excited_state.x_gaussian_excited_energy = pint.Quantity(float(state[1]), 'eV')
+            sec_excited_state.x_gaussian_excited_energy = float(state[1]) * ureg.eV
             sec_excited_state.x_gaussian_excited_oscstrength = float(state[2])
             sec_excited_state.x_gaussian_excited_spin_squared = float(state[3])
             sec_excited_state.x_gaussian_excited_transition = ' '.join(state[4:])
@@ -760,7 +760,7 @@ class GaussianParser(FairdiParser):
                 values = np.reshape(values, (len(values), 1, len(values[0])))
                 occupation = np.reshape(occupation, (len(occupation), 1, len(occupation[0])))
                 sec_eigenvalues = sec_scc.m_create(Eigenvalues)
-                sec_eigenvalues.eigenvalues_values = pint.Quantity(values, 'hartree')
+                sec_eigenvalues.eigenvalues_values = np.array(values, dtype=np.dtype(np.float64)) * ureg.hartree
                 sec_eigenvalues.eigenvalues_occupation = occupation
             except Exception:
                 self.logger.error('Error setting eigenvalues.')
@@ -797,7 +797,7 @@ class GaussianParser(FairdiParser):
         force_constants = section.get('force_constants')
         if force_constants is not None:
             sec_force_constant = sec_run.m_create(x_gaussian_section_force_constant_matrix)
-            force_constants = pint.Quantity(force_constants, 'hartree/(bohr**2)')
+            force_constants = force_constants * ureg.hartree / ureg.bohr ** 2
             sec_force_constant.x_gaussian_force_constant_values = force_constants.to(
                 'J/(m**2)').magnitude
 
@@ -809,7 +809,7 @@ class GaussianParser(FairdiParser):
             sec_frequencies.x_gaussian_frequencies = np.hstack(frequencies)
             reduced_masses = section.get('reduced_masses')
             if reduced_masses is not None:
-                reduced_masses = pint.Quantity(np.hstack(reduced_masses), 'amu')
+                reduced_masses = np.hstack(reduced_masses) * ureg.amu
                 sec_frequencies.x_gaussian_red_masses = reduced_masses.to('kg').magnitude
             normal_modes = section.get('normal_modes')
             if normal_modes is not None:
@@ -822,8 +822,7 @@ class GaussianParser(FairdiParser):
         if temperature_pressure is not None:
             sec_thermochem = sec_run.m_create(x_gaussian_section_thermochem)
             sec_thermochem.x_gaussian_temperature = temperature_pressure[0]
-            sec_thermochem.x_gaussian_pressure = pint.Quantity(
-                temperature_pressure[1], 'atm').to('N/m**2').magnitude
+            sec_thermochem.x_gaussian_pressure = (temperature_pressure[1] * ureg.atm).to('N/m**2').magnitude
             moments = section.get('moments')
             if moments is not None:
                 sec_thermochem.x_gaussian_moments = moments.to('kg*m**2').magnitude
@@ -872,8 +871,8 @@ class GaussianParser(FairdiParser):
         sec_system = sec_run.m_create(System)
         lattice_vector = self.out_parser.get('run')[n_run].get('lattice_vector')
         if lattice_vector is not None:
-            sec_system.lattice_vectors = pint.Quantity(lattice_vector, 'angstrom')
-            sec_system.simulation_cell = pint.Quantity(lattice_vector, 'angstrom')
+            sec_system.lattice_vectors = lattice_vector * ureg.angstrom
+            sec_system.simulation_cell = lattice_vector * ureg.angstrom
             pbc = [len(lattice_vector) >= n for n in [1, 2, 3]]
             sec_system.configuration_periodic_dimensions = [pbc]
         else:
@@ -888,7 +887,7 @@ class GaussianParser(FairdiParser):
         if orientation is not None:
             sec_system.atom_labels = [
                 ase.data.chemical_symbols[int(n)] for n in [o[1] for o in orientation]]
-            sec_system.atom_positions = pint.Quantity([o[-3:] for o in orientation], 'angstrom')
+            sec_system.atom_positions = [o[-3:] for o in orientation] * ureg.angstrom
             sec_system.x_gaussian_number_of_atoms = len(sec_system.atom_labels)
 
         for key in ['x_gaussian_total_charge', 'x_gaussian_spin_target_multiplicity']:
