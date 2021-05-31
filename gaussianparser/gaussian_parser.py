@@ -9,8 +9,8 @@ from nomad.units import ureg
 from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser.text_parser import TextParser, Quantity
 from nomad.datamodel.metainfo.common_dft import Run, Method, System, XCFunctionals,\
-    BasisSetAtomCentered, SingleConfigurationCalculation, Eigenvalues, SamplingMethod,\
-    ScfIteration
+    BasisSetAtomCentered, SingleConfigurationCalculation, BandEnergies, BandEnergiesValues,\
+    SamplingMethod, ScfIteration
 from .metainfo.gaussian import x_gaussian_section_elstruc_method,\
     x_gaussian_section_moller_plesset, x_gaussian_section_hybrid_coeffs,\
     x_gaussian_section_coupled_cluster, x_gaussian_section_quadratic_ci,\
@@ -757,11 +757,17 @@ class GaussianParser(FairdiParser):
                 values = values[0:1]
                 occupation = np.array(occupation[0:1]) * 2
             try:
+                values = np.array(values, dtype=np.dtype(np.float64))
                 values = np.reshape(values, (len(values), 1, len(values[0])))
                 occupation = np.reshape(occupation, (len(occupation), 1, len(occupation[0])))
-                sec_eigenvalues = sec_scc.m_create(Eigenvalues)
-                sec_eigenvalues.eigenvalues_values = np.array(values, dtype=np.dtype(np.float64)) * ureg.hartree
-                sec_eigenvalues.eigenvalues_occupation = occupation
+                sec_eigenvalues = sec_scc.m_create(BandEnergies)
+                for spin in range(len(values)):
+                    for kpt in range(len(values[spin])):
+                        sec_eigenvalues_values = sec_eigenvalues.m_create(BandEnergiesValues)
+                        sec_eigenvalues_values.band_energies_spin = spin
+                        sec_eigenvalues_values.band_energies_kpoints_index = kpt
+                        sec_eigenvalues_values.band_energies_values = values[spin][kpt] * ureg.hartree
+                        sec_eigenvalues_values.band_energies_occupations = occupation[spin][kpt]
             except Exception:
                 self.logger.error('Error setting eigenvalues.')
 

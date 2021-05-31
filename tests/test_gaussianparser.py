@@ -58,10 +58,10 @@ def test_scf_spinpol(parser):
     assert len(sec_sccs) == 1
     assert sec_sccs[0].energy_total.magnitude == approx(-1.05675722e-15)
     assert len(sec_sccs[0].x_gaussian_section_hybrid_coeffs) == 1
-    assert np.shape(sec_sccs[0].section_eigenvalues[0].eigenvalues_occupation) == (1, 1, 50)
-    assert np.shape(sec_sccs[0].section_eigenvalues[0].eigenvalues_values) == (1, 1, 50)
-    assert sec_sccs[0].section_eigenvalues[0].eigenvalues_occupation[0][0][7] == 0
-    assert sec_sccs[0].section_eigenvalues[0].eigenvalues_values[0][0][-5].magnitude == approx(4.64011991e-18)
+    assert np.shape(sec_sccs[0].eigenvalues[0].band_energies[0].band_energies_occupations) == (50,)
+    assert np.shape(sec_sccs[0].eigenvalues[0].band_energies[0].band_energies_values) == (50,)
+    assert sec_sccs[0].eigenvalues[0].band_energies[0].band_energies_occupations[7] == 0
+    assert sec_sccs[0].eigenvalues[0].band_energies[0].band_energies_values[-5].magnitude == approx(4.64011991e-18)
     assert sec_sccs[0].x_gaussian_section_molecular_multipoles[0].x_gaussian_molecular_multipole_values[4] == approx(-9.36527896e-39)
     assert len(sec_sccs[0].section_scf_iteration) == 1
     assert sec_sccs[0].section_scf_iteration[0].x_gaussian_energy_scf.magnitude == approx(-1.05675722e-15)
