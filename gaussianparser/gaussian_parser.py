@@ -764,10 +764,10 @@ class GaussianParser(FairdiParser):
                 for spin in range(len(values)):
                     for kpt in range(len(values[spin])):
                         sec_eigenvalues_values = sec_eigenvalues.m_create(BandEnergiesValues)
-                        sec_eigenvalues_values.band_energies_spin = spin
-                        sec_eigenvalues_values.band_energies_kpoints_index = kpt
-                        sec_eigenvalues_values.band_energies_values = values[spin][kpt] * ureg.hartree
-                        sec_eigenvalues_values.band_energies_occupations = occupation[spin][kpt]
+                        sec_eigenvalues_values.spin = spin
+                        sec_eigenvalues_values.kpoints_index = kpt
+                        sec_eigenvalues_values.value = values[spin][kpt] * ureg.hartree
+                        sec_eigenvalues_values.occupations = occupation[spin][kpt]
             except Exception:
                 self.logger.error('Error setting eigenvalues.')
 
