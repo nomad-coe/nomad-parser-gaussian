@@ -10,7 +10,7 @@ from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser.text_parser import TextParser, Quantity
 from nomad.datamodel.metainfo.common_dft import Run, Method, System, XCFunctionals,\
     BasisSetAtomCentered, SingleConfigurationCalculation, BandEnergies, BandEnergiesValues,\
-    SamplingMethod, ScfIteration
+    SamplingMethod, ScfIteration, Energy, Forces
 from .metainfo.gaussian import x_gaussian_section_elstruc_method,\
     x_gaussian_section_moller_plesset, x_gaussian_section_hybrid_coeffs,\
     x_gaussian_section_coupled_cluster, x_gaussian_section_quadratic_ci,\
@@ -664,7 +664,8 @@ class GaussianParser(FairdiParser):
         # total energy
         energy_total = section.get('energy_total')
         if energy_total is not None:
-            sec_scc.energy_total = energy_total[-1]
+            sec_scc.m_add_sub_section(
+                SingleConfigurationCalculation.energy_total, Energy(value=energy_total[-1]))
 
         # hybrid coefficients
         sec_hybrid_coeffs = None
@@ -702,7 +703,8 @@ class GaussianParser(FairdiParser):
 
             energy_total = section.get('energy_total_%s' % method)
             if energy_total is not None:
-                sec_scc.energy_total = energy_total[-1]
+                sec_scc.m_add_sub_section(
+                    SingleConfigurationCalculation.energy_total, Energy(value=energy_total[-1]))
 
             return sec_method
 
@@ -797,7 +799,8 @@ class GaussianParser(FairdiParser):
         # forces
         forces = section.get('forces')
         if forces is not None:
-            sec_scc.atom_forces_raw = forces
+            sec_scc.m_add_sub_section(
+                SingleConfigurationCalculation.forces_total, Forces(value_raw=forces))
 
         # force constants
         force_constants = section.get('force_constants')
@@ -867,7 +870,8 @@ class GaussianParser(FairdiParser):
                 if energy_scf is not None and electronic_ke is not None:
                     sec_scf_iteration.x_gaussian_energy_electrostatic = energy_scf - electronic_ke
                 if energy_scf is not None:
-                    sec_scc.energy_total = energy_scf
+                    sec_scc.m_add_sub_section(
+                        SingleConfigurationCalculation.energy_total, Energy(value=energy_scf))
                 sec_scc.single_configuration_calculation_converged = True
 
         return sec_scc

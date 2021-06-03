@@ -56,7 +56,7 @@ def test_scf_spinpol(parser):
 
     sec_sccs = sec_runs[0].section_single_configuration_calculation
     assert len(sec_sccs) == 1
-    assert sec_sccs[0].energy_total.magnitude == approx(-1.05675722e-15)
+    assert sec_sccs[0].energy_total.value.magnitude == approx(-1.05675722e-15)
     assert len(sec_sccs[0].x_gaussian_section_hybrid_coeffs) == 1
     assert np.shape(sec_sccs[0].eigenvalues[0].band_energies[0].occupations) == (50,)
     assert np.shape(sec_sccs[0].eigenvalues[0].band_energies[0].value) == (50,)
@@ -84,7 +84,7 @@ def test_scf_multirun(parser):
     assert len(sec_runs[1].section_method) == 1
 
     sec_scc = sec_runs[0].section_single_configuration_calculation[4]
-    assert sec_scc.atom_forces_raw[0][2].magnitude == approx(-9.69697756e-14)
+    assert sec_scc.forces_total.value_raw[0][2].magnitude == approx(-9.69697756e-14)
     assert sec_scc.section_scf_iteration[3].x_gaussian_delta_energy_total_scf_iteration.magnitude == approx(-8.82412332e-27)
 
     sec_thermo = sec_runs[1].x_gaussian_section_thermochem[0]
@@ -100,7 +100,7 @@ def test_mp(parser):
     sec_sccs = archive.section_run[0].section_single_configuration_calculation
     assert len(sec_sccs) == 17
     approx(sec_sccs[0].x_gaussian_section_moller_plesset[0].x_gaussian_mp2_correction_energy.magnitude, -3.17820357e-18)
-    approx(sec_sccs[-1].energy_total.magnitude, -1.12849219e-15)
+    approx(sec_sccs[-1].energy_total.value.magnitude, -1.12849219e-15)
     approx(sec_sccs[3].x_gaussian_section_coupled_cluster[0].x_gaussian_ccsd_correction_energy.magnitude, -3.08257224e-18)
 
 
