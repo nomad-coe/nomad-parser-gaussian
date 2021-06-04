@@ -9,7 +9,7 @@ from nomad.units import ureg
 from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser.text_parser import TextParser, Quantity
 from nomad.datamodel.metainfo.common_dft import Run, Method, System, XCFunctionals,\
-    BasisSetAtomCentered, SingleConfigurationCalculation, BandEnergies, BandEnergiesValues,\
+    BasisSetAtomCentered, SingleConfigurationCalculation, BandEnergies,\
     SamplingMethod, ScfIteration, Energy, Forces
 from .metainfo.gaussian import x_gaussian_section_elstruc_method,\
     x_gaussian_section_moller_plesset, x_gaussian_section_hybrid_coeffs,\
@@ -763,13 +763,8 @@ class GaussianParser(FairdiParser):
                 values = np.reshape(values, (len(values), 1, len(values[0])))
                 occupation = np.reshape(occupation, (len(occupation), 1, len(occupation[0])))
                 sec_eigenvalues = sec_scc.m_create(BandEnergies)
-                for spin in range(len(values)):
-                    for kpt in range(len(values[spin])):
-                        sec_eigenvalues_values = sec_eigenvalues.m_create(BandEnergiesValues)
-                        sec_eigenvalues_values.spin = spin
-                        sec_eigenvalues_values.kpoints_index = kpt
-                        sec_eigenvalues_values.value = values[spin][kpt] * ureg.hartree
-                        sec_eigenvalues_values.occupations = occupation[spin][kpt]
+                sec_eigenvalues.value = values * ureg.hartree
+                sec_eigenvalues.occupations = occupation
             except Exception:
                 self.logger.error('Error setting eigenvalues.')
 
