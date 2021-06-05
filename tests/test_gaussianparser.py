@@ -87,10 +87,11 @@ def test_scf_multirun(parser):
     assert sec_scc.forces_total.value_raw[0][2].magnitude == approx(-9.69697756e-14)
     assert sec_scc.scf_iteration[3].energy_change.magnitude == approx(-8.82412332e-27)
 
-    sec_thermo = sec_runs[1].x_gaussian_section_thermochem[0]
-    assert sec_thermo.x_gaussian_temperature == approx(298.15)
-    assert sec_thermo.x_gaussian_moments[1] == approx(8.59409221e-45)
-    assert sec_thermo.x_gaussian_thermal_correction_free_energy == approx(-1.00274129e-19)
+    sec_thermochem = sec_runs[1].x_gaussian_section_thermochem[0]
+    sec_thermo = sec_runs[1].section_single_configuration_calculation[0].thermodynamics[0]
+    assert sec_thermo.temperature.magnitude == approx(298.15)
+    assert sec_thermochem.x_gaussian_moments[1] == approx(8.59409221e-45)
+    assert sec_thermochem.x_gaussian_thermal_correction_free_energy == approx(-1.00274129e-19)
 
 
 def test_mp(parser):

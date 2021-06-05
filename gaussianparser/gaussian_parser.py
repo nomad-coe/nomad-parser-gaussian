@@ -10,7 +10,7 @@ from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser.text_parser import TextParser, Quantity
 from nomad.datamodel.metainfo.common_dft import Run, Method, System, XCFunctionals,\
     BasisSetAtomCentered, SingleConfigurationCalculation, BandEnergies,\
-    SamplingMethod, ScfIteration, Energy, Forces
+    SamplingMethod, ScfIteration, Energy, Forces, Thermodynamics
 from .metainfo.gaussian import x_gaussian_section_elstruc_method,\
     x_gaussian_section_moller_plesset, x_gaussian_section_hybrid_coeffs,\
     x_gaussian_section_coupled_cluster, x_gaussian_section_quadratic_ci,\
@@ -824,12 +824,18 @@ class GaussianParser(FairdiParser):
         # thermochemistry
         temperature_pressure = section.get('temperature_pressure')
         if temperature_pressure is not None:
+            sec_thermo = sec_scc.m_create(Thermodynamics)
+            # TODO extend Thermodynamics instead
             sec_thermochem = sec_run.m_create(x_gaussian_section_thermochem)
-            sec_thermochem.x_gaussian_temperature = temperature_pressure[0]
-            sec_thermochem.x_gaussian_pressure = (temperature_pressure[1] * ureg.atm).to('N/m**2').magnitude
+            sec_thermo.temperature = temperature_pressure[0]
+            sec_thermo.pressure = (temperature_pressure[1] * ureg.atm).to('N/m**2')
             moments = section.get('moments')
             if moments is not None:
                 sec_thermochem.x_gaussian_moments = moments.to('kg*m**2').magnitude
+            if section.get('zero_point_energy') is not None:
+                sec_scc.energy_zero_point = Energy(value=section.get('zero_point_energy'))
+            if section.get('thermal_correction_enthalpy') is not None:
+                sec_thermo.enthalpy = section.get('thermal_correction_enthalpy')
             keys = [
                 'zero_point_energy', 'thermal_correction_energy',
                 'thermal_correction_enthalpy', 'thermal_correction_free_energy']
