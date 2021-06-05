@@ -280,18 +280,18 @@ class GaussianOutParser(TextParser):
                     Quantity(
                         'x_gaussian_hf_detect', r'E\((.+?)\)'),
                     Quantity(
-                        'x_gaussian_energy_scf',
+                        'energy_total',
                         rf'({re_float})\s*A\.U\.', dtype=float, unit='hartree'),
                     Quantity(
                         'x_gaussian_energy_error',
                         rf'Conv\s*=\s*({re_float_dexp})', unit='hartree', convert=False,
                         str_operation=str_to_exp),
                     Quantity(
-                        'x_gaussian_electronic_kinetic_energy',
+                        ' energy_kinetic_electronic',
                         rf'KE\s*=\s*({re_float_dexp})', unit='hartree', convert=False,
                         str_operation=str_to_exp),
                     Quantity(
-                        'x_gaussian_spin_S2', rf'before annihilation\s*({re_float})', dtype=float),
+                        'spin_S2', rf'before annihilation\s*({re_float})', dtype=float),
                     Quantity(
                         'x_gaussian_after_annihilation_spin_S2',
                         rf',\s*after\s*({re_float})', dtype=float),
@@ -841,29 +841,35 @@ class GaussianParser(FairdiParser):
         # scf_iteration
         for iteration in section.get('scf_iteration', []):
             sec_scf_iteration = sec_scc.m_create(ScfIteration)
-            for key in ['energy_total_scf_iteration', 'x_gaussian_delta_energy_total_scf_iteration']:
-                val = iteration.get(key)
-                if val is not None:
-                    setattr(sec_scf_iteration, key, val)
+            energy = iteration.get('energy_total_scf_iteration')
+            if energy is not None:
+                sec_scf_iteration.energy_total = Energy(value=energy)
+            energy = iteration.get('x_gaussian_delta_energy_total_scf_iteration')
+            if energy is not None:
+                sec_scf_iteration.energy_change = energy
+
         iteration = section.get('scf_iteration_final')
         if iteration is not None:
-            sec_scf_iteration = sec_scc.section_scf_iteration
+            sec_scf_iteration = sec_scc.scf_iteration
             sec_scf_iteration = sec_scf_iteration[-1] if sec_scf_iteration else sec_scc.m_create(ScfIteration)
             keys = [
                 'x_gaussian_single_configuration_calculation_converged',
-                'x_gaussian_hf_detect', 'x_gaussian_energy_scf', 'x_gaussian_energy_error',
-                'x_gaussian_electronic_kinetic_energy'
-                'x_gaussian_spin_S2', 'x_gaussian_after_annihilation_spin_S2',
+                'x_gaussian_hf_detect', 'energy_total', 'x_gaussian_energy_error',
+                'energy_kinetic_electronic',
+                'spin_S2', 'x_gaussian_after_annihilation_spin_S2',
                 'x_gaussian_perturbation_energy']
             for key in keys:
                 val = iteration.get(key)
                 if val is not None:
-                    setattr(sec_scf_iteration, key, val)
+                    if key.startswith('energy_'):
+                        sec_scf_iteration.m_add_sub_section(getattr(ScfIteration, key), Energy(value=val))
+                    else:
+                        setattr(sec_scf_iteration, key, val)
             if iteration.get('x_gaussian_single_configuration_calculation_converged') is not None:
-                energy_scf = iteration.get('x_gaussian_energy_scf')
-                electronic_ke = iteration.get('x_gaussian_electronic_kinetic_energy')
+                energy_scf = iteration.get('energy_total')
+                electronic_ke = iteration.get(' energy_kinetic_electronic')
                 if energy_scf is not None and electronic_ke is not None:
-                    sec_scf_iteration.x_gaussian_energy_electrostatic = energy_scf - electronic_ke
+                    sec_scf_iteration.energy_electrostatic = Energy(value=energy_scf - electronic_ke)
                 if energy_scf is not None:
                     sec_scc.m_add_sub_section(
                         SingleConfigurationCalculation.energy_total, Energy(value=energy_scf))

@@ -63,8 +63,8 @@ def test_scf_spinpol(parser):
     assert sec_sccs[0].eigenvalues[0].occupations[0][0][7] == 0
     assert sec_sccs[0].eigenvalues[0].value[0][0][-5].magnitude == approx(4.64011991e-18)
     assert sec_sccs[0].x_gaussian_section_molecular_multipoles[0].x_gaussian_molecular_multipole_values[4] == approx(-9.36527896e-39)
-    assert len(sec_sccs[0].section_scf_iteration) == 1
-    assert sec_sccs[0].section_scf_iteration[0].x_gaussian_energy_scf.magnitude == approx(-1.05675722e-15)
+    assert len(sec_sccs[0].scf_iteration) == 1
+    assert sec_sccs[0].scf_iteration[0].energy_total.value.magnitude == approx(-1.05675722e-15)
     assert sec_sccs[0].single_configuration_calculation_converged
 
 
@@ -76,8 +76,8 @@ def test_scf_multirun(parser):
     assert len(sec_runs) == 2
     assert len(sec_runs[0].section_single_configuration_calculation) == 6
     assert len(sec_runs[1].section_single_configuration_calculation) == 1
-    assert len(sec_runs[0].section_single_configuration_calculation[2].section_scf_iteration) == 11
-    assert len(sec_runs[1].section_single_configuration_calculation[0].section_scf_iteration) == 1
+    assert len(sec_runs[0].section_single_configuration_calculation[2].scf_iteration) == 11
+    assert len(sec_runs[1].section_single_configuration_calculation[0].scf_iteration) == 1
     assert len(sec_runs[0].section_system) == 6
     assert len(sec_runs[1].section_system) == 1
     assert len(sec_runs[0].section_method) == 1
@@ -85,7 +85,7 @@ def test_scf_multirun(parser):
 
     sec_scc = sec_runs[0].section_single_configuration_calculation[4]
     assert sec_scc.forces_total.value_raw[0][2].magnitude == approx(-9.69697756e-14)
-    assert sec_scc.section_scf_iteration[3].x_gaussian_delta_energy_total_scf_iteration.magnitude == approx(-8.82412332e-27)
+    assert sec_scc.scf_iteration[3].energy_change.magnitude == approx(-8.82412332e-27)
 
     sec_thermo = sec_runs[1].x_gaussian_section_thermochem[0]
     assert sec_thermo.x_gaussian_temperature == approx(298.15)
