@@ -8,9 +8,18 @@ from .metainfo import m_env
 from nomad.units import ureg
 from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser.text_parser import TextParser, Quantity
-from nomad.datamodel.metainfo.common_dft import Run, Method, System, XCFunctionals,\
-    BasisSetAtomCentered, SingleConfigurationCalculation, BandEnergies,\
-    SamplingMethod, ScfIteration, Energy, Forces, Thermodynamics
+from nomad.datamodel.metainfo.run.run import Run, Program
+from nomad.datamodel.metainfo.run.method import (
+    Electronic, Method, MethodReference, XCFunctional, Functional, DFT, BasisSet, BasisSetAtomCentered
+)
+from nomad.datamodel.metainfo.run.system import (
+    System, Atoms, SystemReference
+)
+from nomad.datamodel.metainfo.run.calculation import (
+    Calculation, Energy, EnergyEntry, BandEnergies, Forces, ForcesEntry, Thermodynamics,
+    ScfIteration
+)
+from nomad.datamodel.metainfo.workflow import Workflow
 from .metainfo.gaussian import x_gaussian_section_elstruc_method,\
     x_gaussian_section_moller_plesset, x_gaussian_section_hybrid_coeffs,\
     x_gaussian_section_coupled_cluster, x_gaussian_section_quadratic_ci,\
@@ -308,9 +317,9 @@ class GaussianOutParser(TextParser):
                 convert=False,
                 str_operation=lambda x: x.strip().replace('\n', '')),
             Quantity(
-                'x_gaussian_total_charge', r'Charge =\s*([\-\+\d]+)', dtype=int),
+                'charge', r'Charge =\s*([\-\+\d]+)', dtype=int),
             Quantity(
-                'x_gaussian_spin_target_multiplicity', r'Multiplicity =\s*([\-\+\d]+)', dtype=int),
+                'spin_target', r'Multiplicity =\s*([\-\+\d]+)', dtype=int),
             Quantity(
                 'lattice_vector', r'(?:TV|Tv)\s*0?\s*([\d\. ]+)', dtype=float, repeats=True),
             Quantity(
@@ -658,14 +667,14 @@ class GaussianParser(FairdiParser):
             'molmech': (x_gaussian_section_molmech, [])}
 
     def parse_scc(self, section):
-        sec_run = self.archive.section_run[-1]
-        sec_scc = sec_run.m_create(SingleConfigurationCalculation)
+        sec_run = self.archive.run[-1]
+        sec_scc = sec_run.m_create(Calculation)
 
         # total energy
+        sec_energy = sec_scc.m_create(Energy)
         energy_total = section.get('energy_total')
         if energy_total is not None:
-            sec_scc.m_add_sub_section(
-                SingleConfigurationCalculation.energy_total, Energy(value=energy_total[-1]))
+            sec_energy.total = EnergyEntry(value=energy_total[-1])
 
         # hybrid coefficients
         sec_hybrid_coeffs = None
@@ -703,8 +712,7 @@ class GaussianParser(FairdiParser):
 
             energy_total = section.get('energy_total_%s' % method)
             if energy_total is not None:
-                sec_scc.m_add_sub_section(
-                    SingleConfigurationCalculation.energy_total, Energy(value=energy_total[-1]))
+                sec_energy.total = EnergyEntry(value=energy_total[-1])
 
             return sec_method
 
@@ -794,8 +802,7 @@ class GaussianParser(FairdiParser):
         # forces
         forces = section.get('forces')
         if forces is not None:
-            sec_scc.m_add_sub_section(
-                SingleConfigurationCalculation.forces_total, Forces(value_raw=forces))
+            sec_scc.forces = Forces(total=ForcesEntry(value_raw=forces))
 
         # force constants
         force_constants = section.get('force_constants')
@@ -833,7 +840,7 @@ class GaussianParser(FairdiParser):
             if moments is not None:
                 sec_thermochem.x_gaussian_moments = moments.to('kg*m**2').magnitude
             if section.get('zero_point_energy') is not None:
-                sec_scc.energy_zero_point = Energy(value=section.get('zero_point_energy'))
+                sec_scc.energy.zero_point = EnergyEntry(value=section.get('zero_point_energy'))
             if section.get('thermal_correction_enthalpy') is not None:
                 sec_thermo.enthalpy = section.get('thermal_correction_enthalpy')
             keys = [
@@ -848,16 +855,18 @@ class GaussianParser(FairdiParser):
         for iteration in section.get('scf_iteration', []):
             sec_scf_iteration = sec_scc.m_create(ScfIteration)
             energy = iteration.get('energy_total_scf_iteration')
+            sec_scf_energy = sec_scf_iteration.m_create(Energy)
             if energy is not None:
-                sec_scf_iteration.energy_total = Energy(value=energy)
+                sec_scf_energy.total = EnergyEntry(value=energy)
             energy = iteration.get('x_gaussian_delta_energy_total_scf_iteration')
             if energy is not None:
-                sec_scf_iteration.energy_change = energy
+                sec_scf_energy.change = energy
 
         iteration = section.get('scf_iteration_final')
         if iteration is not None:
             sec_scf_iteration = sec_scc.scf_iteration
             sec_scf_iteration = sec_scf_iteration[-1] if sec_scf_iteration else sec_scc.m_create(ScfIteration)
+            sec_scf_energy = sec_scf_iteration.m_create(Energy)
             keys = [
                 'x_gaussian_single_configuration_calculation_converged',
                 'x_gaussian_hf_detect', 'energy_total', 'x_gaussian_energy_error',
@@ -868,33 +877,33 @@ class GaussianParser(FairdiParser):
                 val = iteration.get(key)
                 if val is not None:
                     if key.startswith('energy_'):
-                        sec_scf_iteration.m_add_sub_section(getattr(ScfIteration, key), Energy(value=val))
+                        sec_scf_energy.m_add_sub_section(getattr(
+                            Energy, key.replace('energy_', '')), EnergyEntry(value=val))
                     else:
                         setattr(sec_scf_iteration, key, val)
             if iteration.get('x_gaussian_single_configuration_calculation_converged') is not None:
                 energy_scf = iteration.get('energy_total')
                 electronic_ke = iteration.get(' energy_kinetic_electronic')
                 if energy_scf is not None and electronic_ke is not None:
-                    sec_scf_iteration.energy_electrostatic = Energy(value=energy_scf - electronic_ke)
+                    sec_scf_energy.electrostatic = EnergyEntry(value=energy_scf - electronic_ke)
                 if energy_scf is not None:
-                    sec_scc.m_add_sub_section(
-                        SingleConfigurationCalculation.energy_total, Energy(value=energy_scf))
-                sec_scc.single_configuration_calculation_converged = True
+                    sec_energy.total = EnergyEntry(value=energy_scf)
+                sec_scc.calculation_converged = True
 
         return sec_scc
 
     def parse_system(self, n_run, section):
-        sec_run = self.archive.section_run[-1]
+        sec_run = self.archive.run[-1]
         sec_system = sec_run.m_create(System)
+        sec_atoms = sec_system.m_create(Atoms)
         lattice_vector = self.out_parser.get('run')[n_run].get('lattice_vector')
         if lattice_vector is not None:
-            sec_system.lattice_vectors = lattice_vector * ureg.angstrom
-            sec_system.simulation_cell = lattice_vector * ureg.angstrom
+            sec_atoms.lattice_vectors = lattice_vector * ureg.angstrom
             pbc = [len(lattice_vector) >= n for n in [1, 2, 3]]
-            sec_system.configuration_periodic_dimensions = [pbc]
+            sec_atoms.periodic = [pbc]
         else:
-            sec_system.lattice_vectors = np.zeros((3, 3))
-            sec_system.configuration_periodic_dimensions = [False] * 3
+            sec_atoms.lattice_vectors = np.zeros((3, 3))
+            sec_atoms.periodic = [False] * 3
 
         orientation = section.get('standard_orientation')
         if orientation is None:
@@ -902,15 +911,10 @@ class GaussianParser(FairdiParser):
         if orientation is None:
             orientation = section.get('z_matrix_orientation')
         if orientation is not None:
-            sec_system.atom_labels = [
+            sec_atoms.labels = [
                 ase.data.chemical_symbols[int(n)] for n in [o[1] for o in orientation]]
-            sec_system.atom_positions = [o[-3:] for o in orientation] * ureg.angstrom
-            sec_system.x_gaussian_number_of_atoms = len(sec_system.atom_labels)
-
-        for key in ['x_gaussian_total_charge', 'x_gaussian_spin_target_multiplicity']:
-            val = self.out_parser.get('run')[n_run].get(key)
-            if val is not None:
-                setattr(sec_system, key, val)
+            sec_atoms.positions = [o[-3:] for o in orientation] * ureg.angstrom
+            sec_system.x_gaussian_number_of_atoms = len(sec_system.atoms.labels)
 
         return sec_system
 
@@ -922,24 +926,24 @@ class GaussianParser(FairdiParser):
                 sec_scc = self.parse_scc(calculation)
                 if sec_scc is not None:
                     if sec_system is not None:
-                        sec_scc.single_configuration_calculation_to_system_ref = sec_system
-                    sec_method = self.archive.section_run[-1].section_method
+                        sec_scc.system_ref.append(SystemReference(value=sec_system))
+                    sec_method = self.archive.run[-1].method
                     if sec_method:
-                        sec_scc.single_configuration_to_calculation_method_ref = sec_method[-1]
+                        sec_scc.method_ref.append(MethodReference(value=sec_method[-1]))
 
         iterations = self.out_parser.get('run')[n_run].get('iteration', [])
-        sec_system = self.archive.section_run[0].section_system
-        sec_method = self.archive.section_run[0].section_method
+        sec_system = self.archive.run[0].system
+        sec_method = self.archive.run[0].method
         for iteration in iterations:
             sec_scc = self.parse_scc(iteration)
             if sec_scc is not None:
                 if sec_system:
-                    sec_scc.single_configuration_calculation_to_system_ref = sec_system[-1]
+                    sec_scc.system_ref.append(SystemReference(value=sec_system[-1]))
                 if sec_method:
-                    sec_scc.single_configuration_to_calculation_method_ref = sec_method[-1]
+                    sec_scc.method_ref.append(MethodReference(value=sec_method[-1]))
 
     def parse_method(self, n_run):
-        sec_run = self.archive.section_run[-1]
+        sec_run = self.archive.run[-1]
         sec_method = sec_run.m_create(Method)
         run = self.out_parser.get('run')[n_run]
 
@@ -1033,12 +1037,14 @@ class GaussianParser(FairdiParser):
             if basis_set is not None:
                 basis_sets.add(basis_set)
 
+        sec_dft = sec_method.m_create(DFT)
+        sec_electronic = sec_method.m_create(Electronic)
         if len(methods) != 1:
             self.logger.error('Found mutiple or no method', data=dict(
                 n_parsed=len(methods)))
         for method in methods:
             sec_method.x_gaussian_method = method
-            sec_method.electronic_structure_method = method
+            sec_electronic.method = method
             for entry in self._method_map.get(method, []):
                 sec_elstruc_method = sec_method.m_create(x_gaussian_section_elstruc_method)
                 sec_elstruc_method.x_gaussian_electronic_structure_method = '%s%s' % (
@@ -1048,23 +1054,37 @@ class GaussianParser(FairdiParser):
             self.logger.error('Found multiple or no basis set', data=dict(
                 n_parsed=len(basis_sets)))
         for basis_set in basis_sets:
-            sec_method.basis_set = basis_set[0]
+            sec_basis = sec_method.m_create(BasisSet)
+            sec_basis.name = basis_set[0]
             for _ in self._basis_set_map.get(basis_set[0], []):
-                sec_basis_set_atom_centered = sec_run.m_create(BasisSetAtomCentered)
+                # TODO need to adjust basis_set atom centered to take multiple entries
+                sec_basis_set_atom_centered = sec_basis.m_create(BasisSetAtomCentered)
                 # old parser writes the full name of basis set here not the name on map
-                sec_basis_set_atom_centered.basis_set_atom_centered_short_name = basis_set[1]
+                sec_basis_set_atom_centered.name = basis_set[1]
 
         if len(xc_functionals) != 1:
             self.logger.error('Found multiple or no xc functional', data=dict(
                 n_parsed=len(xc_functionals)))
+        sec_xc_functional = sec_dft.m_create(XCFunctional)
         for xc_functional in xc_functionals:
             sec_method.x_gaussian_xc = xc_functional
             for entry in self._xc_functional_map.get(xc_functional, []):
-                sec_xc_functionals = sec_method.m_create(XCFunctionals)
-                sec_xc_functionals.XC_functional_name = entry['name']
+                if '_X_' in entry['name'] or entry['name'].endswith('_X'):
+                    sec_xc_functional.exchange.append(Functional(name=entry['name']))
+                elif '_C_' in entry['name'] or entry['name'].endswith('_C'):
+                    sec_xc_functional.correlation.append(Functional(name=entry['name']))
+                elif 'HYB' in entry['name'] or entry['name'].endswith('_C'):
+                    sec_xc_functional.hybrid.append(Functional(name=entry['name']))
+                else:
+                    sec_xc_functional.contributions.append(Functional(name=entry['name']))
 
-        sec_sampling_method = sec_run.m_create(SamplingMethod)
-        sec_sampling_method.sampling_method = 'geometry_optimization'
+        for key in ['charge', 'spin_target']:
+            val = self.out_parser.get('run')[n_run].get(key)
+            if val is not None:
+                setattr(sec_electronic, key, val)
+
+        sec_workflow = self.archive.m_create(Workflow)
+        sec_workflow.type = 'geometry_optimization'
 
     def init_parser(self, filepath, logger):
         self.out_parser.mainfile = filepath
@@ -1078,12 +1098,9 @@ class GaussianParser(FairdiParser):
 
         runs = self.out_parser.get('run', [])
         for n in range(len(runs)):
-            sec_run = self.archive.m_create(Run)
-            sec_run.program_name = 'Gaussian'
-            sec_run.program_basis_set_type = 'gaussians'
-
             program = self.out_parser.get('program')
-            sec_run.program_version = program[0]
+            sec_run = self.archive.m_create(Run)
+            sec_run.program = Program(name='Gaussian', version=program[0])
             sec_run.x_gaussian_program_implementation = program[1]
             sec_run.x_gaussian_program_release_date = program[2]
             sec_run.x_gaussian_program_execution_date = program[3]
