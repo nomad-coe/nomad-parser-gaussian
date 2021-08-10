@@ -57,10 +57,10 @@ def test_scf_spinpol(parser):
     assert len(sec_sccs) == 1
     assert sec_sccs[0].energy.total.value.magnitude == approx(-1.05675722e-15)
     assert len(sec_sccs[0].x_gaussian_section_hybrid_coeffs) == 1
-    assert np.shape(sec_sccs[0].eigenvalues.occupations[0][0]) == (50,)
-    assert np.shape(sec_sccs[0].eigenvalues.value[0][0]) == (50,)
-    assert sec_sccs[0].eigenvalues.occupations[0][0][7] == 0
-    assert sec_sccs[0].eigenvalues.value[0][0][-5].magnitude == approx(4.64011991e-18)
+    assert np.shape(sec_sccs[0].eigenvalues[0].occupations[0][0]) == (50,)
+    assert np.shape(sec_sccs[0].eigenvalues[0].value[0][0]) == (50,)
+    assert sec_sccs[0].eigenvalues[0].occupations[0][0][7] == 0
+    assert sec_sccs[0].eigenvalues[0].value[0][0][-5].magnitude == approx(4.64011991e-18)
     assert sec_sccs[0].x_gaussian_section_molecular_multipoles[0].x_gaussian_molecular_multipole_values[4] == approx(-9.36527896e-39)
     assert len(sec_sccs[0].scf_iteration) == 1
     assert sec_sccs[0].scf_iteration[0].energy.total.value.magnitude == approx(-1.05675722e-15)
@@ -87,7 +87,7 @@ def test_scf_multirun(parser):
     assert sec_scc.scf_iteration[3].energy.change.magnitude == approx(-8.82412332e-27)
 
     sec_thermochem = sec_runs[1].x_gaussian_section_thermochem[0]
-    sec_thermo = sec_runs[1].calculation[0].thermodynamics
+    sec_thermo = sec_runs[1].calculation[0].thermodynamics[0]
     assert sec_thermo.temperature.magnitude == approx(298.15)
     assert sec_thermochem.x_gaussian_moments[1] == approx(8.59409221e-45)
     assert sec_thermochem.x_gaussian_thermal_correction_free_energy == approx(-1.00274129e-19)
