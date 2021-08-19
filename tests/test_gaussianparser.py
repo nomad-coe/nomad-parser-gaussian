@@ -58,9 +58,9 @@ def test_scf_spinpol(parser):
     assert sec_sccs[0].energy.total.value.magnitude == approx(-1.05675722e-15)
     assert len(sec_sccs[0].x_gaussian_section_hybrid_coeffs) == 1
     assert np.shape(sec_sccs[0].eigenvalues[0].occupations[0][0]) == (50,)
-    assert np.shape(sec_sccs[0].eigenvalues[0].value[0][0]) == (50,)
+    assert np.shape(sec_sccs[0].eigenvalues[0].energies[0][0]) == (50,)
     assert sec_sccs[0].eigenvalues[0].occupations[0][0][7] == 0
-    assert sec_sccs[0].eigenvalues[0].value[0][0][-5].magnitude == approx(4.64011991e-18)
+    assert sec_sccs[0].eigenvalues[0].energies[0][0][-5].magnitude == approx(4.64011991e-18)
     assert sec_sccs[0].x_gaussian_section_molecular_multipoles[0].x_gaussian_molecular_multipole_values[4] == approx(-9.36527896e-39)
     assert len(sec_sccs[0].scf_iteration) == 1
     assert sec_sccs[0].scf_iteration[0].energy.total.value.magnitude == approx(-1.05675722e-15)

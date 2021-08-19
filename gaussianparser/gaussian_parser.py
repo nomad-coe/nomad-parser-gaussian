@@ -771,7 +771,7 @@ class GaussianParser(FairdiParser):
                 values = np.reshape(values, (len(values), 1, len(values[0])))
                 occupation = np.reshape(occupation, (len(occupation), 1, len(occupation[0])))
                 sec_eigenvalues = sec_scc.m_create(BandEnergies)
-                sec_eigenvalues.value = values * ureg.hartree
+                sec_eigenvalues.energies = values * ureg.hartree
                 sec_eigenvalues.occupations = occupation
             except Exception:
                 self.logger.error('Error setting eigenvalues.')
