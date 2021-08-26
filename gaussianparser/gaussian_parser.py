@@ -1055,6 +1055,7 @@ class GaussianParser(FairdiParser):
                 n_parsed=len(basis_sets)))
         for basis_set in basis_sets:
             sec_basis = sec_method.m_create(BasisSet)
+            sec_basis.type = 'gaussians'
             sec_basis.name = basis_set[0]
             for _ in self._basis_set_map.get(basis_set[0], []):
                 # TODO need to adjust basis_set atom centered to take multiple entries
