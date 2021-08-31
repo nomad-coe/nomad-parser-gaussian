@@ -8,14 +8,14 @@ from .metainfo import m_env
 from nomad.units import ureg
 from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser.text_parser import TextParser, Quantity
-from nomad.datamodel.metainfo.run.run import Run, Program
-from nomad.datamodel.metainfo.run.method import (
-    Electronic, Method, MethodReference, XCFunctional, Functional, DFT, BasisSet, BasisSetAtomCentered
+from nomad.datamodel.metainfo.simulation.run import Run, Program
+from nomad.datamodel.metainfo.simulation.method import (
+    Electronic, Method, XCFunctional, Functional, DFT, BasisSet, BasisSetAtomCentered
 )
-from nomad.datamodel.metainfo.run.system import (
-    System, Atoms, SystemReference
+from nomad.datamodel.metainfo.simulation.system import (
+    System, Atoms
 )
-from nomad.datamodel.metainfo.run.calculation import (
+from nomad.datamodel.metainfo.simulation.calculation import (
     Calculation, Energy, EnergyEntry, BandEnergies, Forces, ForcesEntry, Thermodynamics,
     ScfIteration
 )
@@ -926,10 +926,10 @@ class GaussianParser(FairdiParser):
                 sec_scc = self.parse_scc(calculation)
                 if sec_scc is not None:
                     if sec_system is not None:
-                        sec_scc.system_ref.append(SystemReference(value=sec_system))
+                        sec_scc.system_ref = sec_system
                     sec_method = self.archive.run[-1].method
                     if sec_method:
-                        sec_scc.method_ref.append(MethodReference(value=sec_method[-1]))
+                        sec_scc.method_ref = sec_method[-1]
 
         iterations = self.out_parser.get('run')[n_run].get('iteration', [])
         sec_system = self.archive.run[0].system
@@ -938,9 +938,9 @@ class GaussianParser(FairdiParser):
             sec_scc = self.parse_scc(iteration)
             if sec_scc is not None:
                 if sec_system:
-                    sec_scc.system_ref.append(SystemReference(value=sec_system[-1]))
+                    sec_scc.system_ref = sec_system[-1]
                 if sec_method:
-                    sec_scc.method_ref.append(MethodReference(value=sec_method[-1]))
+                    sec_scc.method_ref = sec_method[-1]
 
     def parse_method(self, n_run):
         sec_run = self.archive.run[-1]
