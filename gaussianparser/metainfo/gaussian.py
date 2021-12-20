@@ -536,7 +536,7 @@ class x_gaussian_section_frequencies(MSection):
         ''',)
 
     x_gaussian_reduced_masses = Quantity(
-        type=str,
+        type=np.dtype(np.float64),
         shape=['number_of_reduced_masses_rows'],
         description='''
         values of normal mode reduced masses
