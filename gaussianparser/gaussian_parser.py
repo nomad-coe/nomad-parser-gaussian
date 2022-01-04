@@ -231,7 +231,7 @@ class GaussianOutParser(TextParser):
                 r'\n *Frequencies \-\-\s*(.+)', dtype=float, repeats=True),
             Quantity(
                 'reduced_masses',
-                r'\n *Red\. masses \-\-\s*(.+)', dtype=float, repeats=True),
+                r'\n *Red\. masses \-\-\s*(.+)', str_operation=lambda x: [float(v) for v in x.split()], repeats=True),
             Quantity(
                 'normal_modes',
                 r'Atom\s*AN.*\s*([\-\d\s\.]+)',
