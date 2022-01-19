@@ -820,7 +820,7 @@ class GaussianParser(FairdiParser):
             sec_frequencies.x_gaussian_frequencies = np.hstack(frequencies)
             reduced_masses = section.get('reduced_masses')
             if reduced_masses is not None:
-                reduced_masses = np.hstack(reduced_masses) * ureg.amu
+                reduced_masses = np.array(np.hstack(reduced_masses), dtype=np.float64) * ureg.amu
                 sec_frequencies.x_gaussian_red_masses = reduced_masses.to('kg').magnitude
             normal_modes = section.get('normal_modes')
             if normal_modes is not None:
