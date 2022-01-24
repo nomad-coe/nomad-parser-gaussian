@@ -19,7 +19,6 @@ from nomad.datamodel.metainfo.simulation.calculation import (
     Calculation, Energy, EnergyEntry, BandEnergies, Forces, ForcesEntry, Thermodynamics,
     ScfIteration
 )
-from nomad.datamodel.metainfo.workflow import Workflow
 from .metainfo.gaussian import x_gaussian_section_elstruc_method,\
     x_gaussian_section_moller_plesset, x_gaussian_section_hybrid_coeffs,\
     x_gaussian_section_coupled_cluster, x_gaussian_section_quadratic_ci,\
@@ -1083,9 +1082,6 @@ class GaussianParser(FairdiParser):
             val = self.out_parser.get('run')[n_run].get(key)
             if val is not None:
                 setattr(sec_electronic, key, val)
-
-        sec_workflow = self.archive.m_create(Workflow)
-        sec_workflow.type = 'geometry_optimization'
 
     def init_parser(self, filepath, logger):
         self.out_parser.mainfile = filepath
